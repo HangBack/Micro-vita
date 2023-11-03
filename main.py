@@ -1,39 +1,47 @@
-import pygame as pg
+import pygame as game
 
 from OpenGL.GLU import *
 from OpenGL.GL import *
 import random
 from pygame.locals import *
 from modules import create_model
-def main():
-    pg.init()
-    display = (1680, 1050)
-    pg.display.set_mode(display, DOUBLEBUF|OPENGL)
 
-    gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
+import const
+
+def init():
+    game.init()
+    game.display.set_mode(
+        const.display, 
+        DOUBLEBUF|OPENGL,
+    )
+    gluPerspective(const.fovy, (const.aspect), const.zNear, const.zFar)
     glTranslatef(0.0, 0.0, -7)
-    cubes = [
-        create_model.cube(x * (1 + random.random()), y * (1 + random.random()), z * (1 + random.random()), (r / 2 + 0.5, g / 2 + 0.5, b / 2 + 0.5)) 
-        for r, x in enumerate([1, -1])
-        for g, y in enumerate([1, -1])
-        for b, z in enumerate([1, -1])
-    ]
+    glTranslatef(0.0, 0.0, -7)
     glCullFace(GL_BACK)
     glEnable(GL_DEPTH_TEST)
-    glPolygonOffset(-1.0, -1)
+
+def update_display():
+    game.display.flip()
+
+
+def main():
+    # 初始化
+    init()
+
+    # 游戏循环
     while True:
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                pg.quit()
+        for event in game.event.get():
+            if event.type == game.QUIT:
+                game.quit()
                 quit()
 
-        glRotatef(1, 1, 1, 1)
+        # 重置画面
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
-        for cube in cubes:
-            cube.draw()
-            cube.move(random.random() / 10 * [1, -1][random.randint(0, 1)], random.random() / 10 * [1, -1][random.randint(0, 1)],random.random() / 10 * [1, -1][random.randint(0, 1)])
-        pg.display.flip()
-        pg.time.wait(10)
+
+
+
+        # 刷新画面
+        update_display()
 
 if __name__ == "__main__":
     main()
