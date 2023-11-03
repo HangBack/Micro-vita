@@ -16,14 +16,14 @@ class cube(object):
         """
         Regular hexahadron
         """
-        self.vector = np.array((length, width, height))
+        self.vector = np.array((length, width, height), dtype=float)
         # 以进位形式表达一个直四棱柱矩阵，x为第一位，y为第二位，z为第三位 其结果乘以三个分量即为该块最终的形状
         self.vertices = np.array([
             (x * length, y * width, z * height) 
             for x in [0, 1] 
             for y in [0, 1] 
             for z in [0, 1]
-        ])
+        ], dtype=float)
         self.edges = [
             (0, 1), (0, 2), (0, 4),
             (1, 3), (1, 5),

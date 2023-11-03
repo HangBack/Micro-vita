@@ -6,8 +6,7 @@ import pygame as game
 import gaming
 import random
 class const:
-    display = (1680, 1050)
-    aspect = display[0] / display[1]
+    display = (0, 0)
     fovy = 90
     zNear = .1
     zFar = 50.
@@ -15,7 +14,11 @@ class const:
     version = "demo 1.0"
     caption = f"{title} {version}"
     _NORM = np.linalg.norm
-    _UNIT = lambda u: (1 / const._NORM(u)) * u
+    _UNIT = lambda u: np.array(u) / const._NORM(np.array(u))
+    player = gaming.entity.player.Player('resources/player/test.json')
     events = [
-        gaming.events.player.Event(np.array([0, 0]))
+        gaming.events.player.Event(player)
     ]
+
+def clamp_number(num,a,b):
+    return max(min(num, max(a, b)), min(a, b))

@@ -2,11 +2,11 @@ from modules import create_model
 import random
 def test():
     cubes = [
-        create_model.cube(x * (2), y * (2), z * (2), (r / 2 + 0.5, g / 2 + 0.5, b / 2 + 0.5)) 
-        for r, x in enumerate([1, -1])
-        for g, y in enumerate([1, -1])
-        for b, z in enumerate([1, -1])
+        create_model.cube(0.05 * 2, 0.05 * 2, 0.05 * 2, (0, 0, 0)),
+        create_model.cube(0.05 * 2, 0.05 * 2, 4 * 2, (0, 0, 1)),
+        create_model.cube(0.05 * 2, 4 * 2, 0.05 * 2, (0, 1, 0)),
+        create_model.cube(4 * 2, 0.05 * 2, 0.05 * 2, (1, 0, 0))
     ]
     for cube in cubes:
-        cube.move(0, -2, 0)
+        cube.move(-4, -4, -4)
     return cubes

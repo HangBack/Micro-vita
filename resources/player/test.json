@@ -1,0 +1,14 @@
+{
+    "name": "test",
+    "position": [0.0, 0.0, 0.0],
+    "rotation": [0.0, 0.0, 0.0],
+    "role": "normal_cell",
+    "collision": [
+        [0, -0.8, 0]
+    ],
+    "model": {
+        "head": [
+            0.5, 0.5, 0.5
+        ]
+    }
+}
