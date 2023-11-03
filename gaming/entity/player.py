@@ -3,6 +3,8 @@ import numpy as np
 from typing import Sequence
 
 import pygame as game
+from OpenGL.GL import *
+from OpenGL.GLU import *
 
 from modules import create_model
 
@@ -20,21 +22,20 @@ class Player:
         self.position: Sequence = np.array(self.file["position"])
         self.role: str = self.file["role"]
         self.collision: Sequence = self.file["collision"]
-        self.model: dict = self.file["model"]
+        self.model = self.file["model"]
         self.init()
 
     def init(self):
-        model = []
-        for key, value in self.model.items():
-            ...
+        self.model = [create_model.cube(*value) for value in self.model.values()]
 
     def camera(self, x, y, z):
         ...
 
 
     def draw(self):
-        self.model
+        for obj in self.model:
+            obj.draw()
 
     def move(self, x, y, z):
         self.position += np.array([x, y, z])
-        self.
+        glTranslatef([x, y, z])

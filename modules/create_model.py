@@ -65,6 +65,7 @@ class cube(object):
     def rotate(self, /, x: float | int, y: float | int, z: float | int, *, deg: float = None, rad: float = None):
         if deg is not None:
             rad = np.deg2rad(deg)
+        # 求模
         _norm = np.linalg.norm
         # 轴
         u = np.array([x, y, z])
