@@ -1,6 +1,6 @@
 from const import *
 from test import test
-
+import gaming
 
 
 # 初始化
@@ -11,23 +11,36 @@ display = game.display.set_mode(
 )
 SCREEN_W, SCREEN_H = display.get_rect()[2:]
 game.display.set_caption(const.caption)
-gluPerspective(const.fovy, (SCREEN_W / SCREEN_H), const.zNear, const.zFar)
-glTranslatef(0.0, 0.0, 0.0)
 glCullFace(GL_BACK)
 glEnable(GL_DEPTH_TEST)
 
 
+player = gaming.entity.player.Player('resources/player/test.json')
+events = [
+    gaming.events.player.Event(player)
+]
+game.mouse.set_visible(False)
+
+def reset_matrix():
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+    gluPerspective(const.fovy, (SCREEN_W / SCREEN_H), const.zNear, const.zFar)
 
 def update_display():
     game.display.flip()
     game.time.wait(10)
 
+cyclers = [
+    player.run
+]
+
 def main():
     # 游戏过程
+    cubes = test()
     while True:
-
-        cubes = test()
-        for event in const.events:
+        for event in events:
             event_arguments = {
                 "pygame_events": game.event.get(),
                 "screen_width": SCREEN_W,
@@ -37,10 +50,14 @@ def main():
         
         
         # 重置画面
+        reset_matrix()
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
+
+        # 循环事件部分
+        for cycler in cyclers:
+            cycler()
         for cube in cubes:
             cube.draw()
-        
         
         
 

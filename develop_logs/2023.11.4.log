@@ -1,0 +1,36 @@
+Develop log:
+1. gaming.entity.player.Player.Camera:
+    - keyword arguments:
+        - position: Camera's position.
+        - look_at: The position where the camera is looking at.
+        - up: The up vector of the camera
+        - pitch: Pitch angle, "nodding one's head"
+        - yaw: Yaw angle, "shaking one's head"
+        - roll: Roll angle, "snaking one's head"
+
+    - methods:
+        - run():
+            Cyclic tasks of player.
+
+2. gaming.event.player.Event:
+    - keyword arguments:
+        - player: Player, instance of gaming.entity.player.Player
+    
+    - methods:
+        - trigger(**kwargs):
+            a series of triggers and then run some commands.
+        
+        - turn_the_perspective(rotation: Sequence, **kwargs):
+            When the system check that user change his rotation, then it will update self.player.camera's look_at, pitch and yaw.
+
+        - forward(amount, **kwargs):
+            When user use "Forward" key(default 'W'), it will update self.player's position
+
+        - backward(amount, **kwargs):
+            When user use "Backward" key(default 'S'), it will update self.player's position
+
+        - move_left(amount, **kwargs):
+            When user use "Move Left" key(default 'A'), it will update self.player's position
+
+        - move_right(amount, **kwargs):
+            When user use "Move Right" key(default 'D'), it will update self.player's position
