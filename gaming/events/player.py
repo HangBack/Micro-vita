@@ -123,7 +123,6 @@ class Event(parent):
 
         self._lr_speed_iter = clamp_number(self._lr_speed_iter + accelerate_speed, 0, self.player.max_speed)
         speed = self._lr_speed_iter
-        print(self._lr_speed_iter)
 
         look_at = self.player.behavior * self.player.camera.look_at
 
