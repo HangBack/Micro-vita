@@ -10,7 +10,6 @@ class Vector(object):
         """
         if args:
             amount_tuple = (amount_tuple, *args)
-        print(amount_tuple)
         self.array = np.array(amount_tuple)
         self.tuple = amount_tuple
 

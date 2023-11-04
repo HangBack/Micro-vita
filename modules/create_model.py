@@ -5,6 +5,8 @@ import numpy as np
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
+from const import *
+
 class polyhedron:
     
     def __init__(self) -> None:
@@ -65,24 +67,10 @@ class cube(object):
     def rotate(self, /, x: float | int, y: float | int, z: float | int, *, deg: float = None, rad: float = None):
         if deg is not None:
             rad = np.deg2rad(deg)
-        # 求模
-        _norm = np.linalg.norm
-        # 轴
-        u = np.array([x, y, z])
+        u = [x, y, z] # 轴向量
+        
         for i, v in enumerate(self.vertices):
-            # 单位化
-            u = (1 / _norm(u)) * u
-
-            # 投影向量
-            v_proj = np.dot(v, u) * u
-            v = v - np.dot(v, u) * u
-            
-            #叉乘计算旋转平面内的y轴方向(这里写成w)
-            w = np.cross(u, v)
-
-            #计算旋转后的向量
-            v = np.cos(rad) * v + np.sin(rad) * w
-            self.vertices[i] = v + v_proj
+            self.vertices[i] = rotate_vector(u, v, rad=rad)
 
     def scale(self, amount: float, x: float = 1, y: float = 1, z: float = 1):
         self.vertices *= np.array([x, y, z]) * amount

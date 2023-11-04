@@ -13,4 +13,3 @@ class test:
 
 t = test()
 t.a[0] = 10
-print(t.a)

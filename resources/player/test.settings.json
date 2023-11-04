@@ -1,5 +1,9 @@
 {
     "control": {
-        "sensitivity": 50.0
+        "sensitivity": 50.0,
+        "forward": "K_w",
+        "backward": "K_s",
+        "move_left": "K_a",
+        "move_right": "K_d"
     }
 }
