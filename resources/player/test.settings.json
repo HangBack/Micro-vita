@@ -1,9 +1,18 @@
 {
     "control": {
         "sensitivity": 50.0,
-        "forward": "K_w",
-        "backward": "K_s",
+        "move_forward": "K_w",
+        "move_backward": "K_s",
         "move_left": "K_a",
-        "move_right": "K_d"
+        "move_right": "K_d",
+        "move_up": "K_SPACE",
+        "move_down": "K_LSHIFT"
+    },
+    "video": {
+        "anti_aliasing": [
+            null,
+            "MSAA 4",
+            "FXAA"
+        ]
     }
 }
