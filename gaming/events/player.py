@@ -1,63 +1,49 @@
-from .._event import Event as parent
-from ..entity.player import Player
+from ..event import Event as parent
 from const import *
 
 class Event(parent):
-
-    def __init__(self, player: Player, **kwargs) -> None:
-        self.player = player
+    def __init__(self) -> None:
         self.tasks = {}
-        pass
 
     def trigger(self, **kwargs):
         for task in self.tasks.values():
             if callable(task):
                 task()
-        self.center_pos = np.array([kwargs["screen_width"] / 2, kwargs["screen_height"] / 2])
-        for event in kwargs["pygame_events"]:
+
+        for event in game.event.get():
             if event.type == game.QUIT:
                 game.quit()
                 quit()
 
-            if self.player.scene == "gaming_type":
-                    
-                key = self.player.settings
+            if self.game.user.scene == "gaming_type":
 
+                game.mouse.set_visible(False)
+                    
+                keys = [
+                    {key: getattr(self.game.user.settings.control, key)}
+                    for key in 
+                        dir(self.game.user.settings.control) 
+                    if not key.startswith('__')
+                ]
                 if event.type == KEYDOWN:
-                    if event.key == key.forward:
-                        self.tasks.__setitem__("forward", self.forward)
-                    if event.key == key.backward:
-                        self.tasks.__setitem__("backward", self.backward)
-                    if event.key == key.move_left:
-                        self.tasks.__setitem__("move_left", self.move_left)
-                    if event.key == key.move_right:
-                        self.tasks.__setitem__("move_right", self.move_right)
+                    for key in keys:
+                        if event.key == list(*key.items())[1]:
+                            self.tasks.__setitem__(
+                                list(*key.items())[0], # 被按的键位
+                                getattr(self, list(*key.items())[0] + "_pressed") # 键位映射的函数名
+                            )
 
                 if event.type == KEYUP:
 
                     if event.key == K_ESCAPE:
                         game.quit()
                         quit()
-                        
-                    if event.key == key.forward:
-                        if hasattr(self, "_fb_speed_iter"):
-                            del self._fb_speed_iter
-                        del self.tasks["forward"]
-                        
-                    if event.key == key.backward:
-                        if hasattr(self, "_fb_speed_iter"):
-                            del self._fb_speed_iter
-                        del self.tasks["backward"]
-                        
-                    if event.key == key.move_left:
-                        if hasattr(self, "_fb_speed_iter"):
-                            del self._fb_speed_iter
-                        del self.tasks["move_left"]
-                        
-                    if event.key == key.move_right:
-                        if hasattr(self, "_fb_speed_iter"):
-                            del self._fb_speed_iter
-                        del self.tasks["move_right"]
+
+                    for key in keys:
+                        if event.key == list(*key.items())[1]:
+                            callback = getattr(self, list(*key.items())[0] + "_released") # 键位映射的函数名
+                            if callable(callback):
+                                callback()
 
                 if event.type == MOUSEMOTION:
                     rotation = np.array(event.rel)
@@ -68,88 +54,143 @@ class Event(parent):
     def turn_the_perspective(self, rotation, **kwargs):
         "转动视角事件"
         # 调用玩家转动方法
-        self.player.rotate(rotation)
+        self.game.user.rotate(rotation)
         # 重置鼠标中心
-        game.mouse.set_pos(self.center_pos)
+        game.mouse.set_pos(self.game.center_pos)
 
-    def forward(self, accelerate_speed=None, max_speed=None, **kwargs):
-        "玩家前进事件"
+    def move_forward_pressed(self, accelerate_speed=None, start_speed=None, max_speed=None, **kwargs):
+        "玩家按压前进事件"
         if not hasattr(self, "_fb_speed_iter"):
             self._fb_speed_iter = 0
 
-        if accelerate_speed is None:
-            accelerate_speed = self.player.accelerate_speed
-        
-        if max_speed is None:
-            max_speed = self.player.max_speed
-
-        self._fb_speed_iter = clamp_number(self._fb_speed_iter + accelerate_speed, 0, self.player.max_speed)
-        speed = self._fb_speed_iter
-
-        look_at = self.player.behavior * self.player.camera.look_at
-
-        motion = np.array(look_at) * speed
-        self.player.move(*motion)
-
-    def backward(self, accelerate_speed=None, max_speed=None, **kwargs):
-        "玩家后退事件"
-        if not hasattr(self, "_fb_speed_iter"):
-            self._fb_speed_iter = 0
+        if start_speed is None:
+            start_speed = self.game.user.start_speed
 
         if accelerate_speed is None:
-            accelerate_speed = self.player.accelerate_speed
+            accelerate_speed = self.game.user.accelerate_speed
         
         if max_speed is None:
-            max_speed = self.player.max_speed
+            max_speed = self.game.user.max_speed
 
-        self._fb_speed_iter = clamp_number(self._fb_speed_iter - accelerate_speed, -self.player.max_speed, 0)
+        self._fb_speed_iter = clamp_number(self._fb_speed_iter + accelerate_speed, start_speed, max_speed)
         speed = self._fb_speed_iter
 
-        look_at = self.player.behavior * self.player.camera.look_at
+        look_at = self.game.user.behavior * self.game.user.camera.look_at
 
         motion = np.array(look_at) * speed
-        self.player.move(*motion)
+        self.game.user.move(*motion)
 
-    def move_left(self, accelerate_speed=None, max_speed=None, **kwargs):
-        "玩家左移动事件"
+    def move_backward_pressed(self, accelerate_speed=None, start_speed=None, max_speed=None, **kwargs):
+        "玩家按压后退事件"
+
+        if start_speed is None:
+            start_speed = self.game.user.start_speed
+
+        if accelerate_speed is None:
+            accelerate_speed = self.game.user.accelerate_speed
+        
+        if max_speed is None:
+            max_speed = self.game.user.max_speed
+
+        self.move_forward_pressed(-accelerate_speed, -start_speed, -max_speed)
+
+    def move_left_pressed(self, accelerate_speed=None, start_speed=None, max_speed=None, **kwargs):
+        "玩家按压左移动事件"
         if not hasattr(self, "_lr_speed_iter"):
             self._lr_speed_iter = 0
 
+        if start_speed is None:
+            start_speed = self.game.user.start_speed
+
         if accelerate_speed is None:
-            accelerate_speed = self.player.accelerate_speed
+            accelerate_speed = self.game.user.accelerate_speed
         
         if max_speed is None:
-            max_speed = self.player.max_speed
+            max_speed = self.game.user.max_speed
 
-        self._lr_speed_iter = clamp_number(self._lr_speed_iter + accelerate_speed, 0, self.player.max_speed)
+        self._lr_speed_iter = clamp_number(self._lr_speed_iter + accelerate_speed, start_speed, max_speed)
         speed = self._lr_speed_iter
 
-        look_at = self.player.behavior * self.player.camera.look_at
+        look_at = self.game.user.behavior * self.game.user.camera.look_at
 
         motion = rotate_vector([0, 1, 0], look_at, 90) * speed
         
-        self.player.move(*motion)
+        self.game.user.move(*motion)
 
-    def move_right(self, accelerate_speed=None, max_speed=None, **kwargs):
-        "玩家右移动事件"
-        if not hasattr(self, "_lr_speed_iter"):
-            self._lr_speed_iter = 0
+    def move_right_pressed(self, accelerate_speed=None, start_speed=None, max_speed=None, **kwargs):
+        "玩家按压右移动事件"
+
+        if start_speed is None:
+            start_speed = self.game.user.start_speed
 
         if accelerate_speed is None:
-            accelerate_speed = self.player.accelerate_speed
+            accelerate_speed = self.game.user.accelerate_speed
         
         if max_speed is None:
-            max_speed = self.player.max_speed
-
-        self._lr_speed_iter = clamp_number(self._lr_speed_iter - accelerate_speed, -self.player.max_speed, 0)
-        speed = self._lr_speed_iter
-
-        look_at = self.player.behavior * self.player.camera.look_at
-
-        motion = rotate_vector([0, 1, 0], look_at, 90) * speed
+            max_speed = self.game.user.max_speed
         
-        self.player.move(*motion)
+        self.move_left_pressed(-accelerate_speed, -start_speed, -max_speed)
 
+    def move_up_pressed(self, accelerate_speed=None, start_speed=None, max_speed=None, **kwargs):
+        "玩家按压上移动事件"
+        if not hasattr(self, "_ud_speed_iter"):
+            self._ud_speed_iter = 0
         
+        if start_speed is None:
+            start_speed = self.game.user.start_speed
+        
+        if accelerate_speed is None:
+            accelerate_speed = self.game.user.accelerate_speed
+        
+        if max_speed is None:
+            max_speed = self.game.user.max_speed
+        
+        self._ud_speed_iter = clamp_number(self._ud_speed_iter + accelerate_speed, start_speed, max_speed)
+        speed = self._ud_speed_iter
 
+        motion = np.array([0, 1, 0]) * speed
         
+        self.game.user.move(*motion)
+
+    def move_down_pressed(self, accelerate_speed=None, start_speed=None, max_speed=None, **kwargs):
+        "玩家按压下移动事件"
+        if start_speed is None:
+            start_speed = self.game.user.start_speed
+        
+        if accelerate_speed is None:
+            accelerate_speed = self.game.user.accelerate_speed
+        
+        if max_speed is None:
+            max_speed = self.game.user.max_speed
+        
+        self.move_up_pressed(-accelerate_speed, -start_speed, -max_speed)
+
+    def move_forward_released(self):
+        if hasattr(self, '_fb_speed_iter'):
+            del self._fb_speed_iter
+        del self.tasks["move_forward"]
+
+    def move_backward_released(self):
+        if hasattr(self, '_fb_speed_iter'):
+            del self._fb_speed_iter
+        del self.tasks["move_backward"]
+
+    def move_left_released(self):
+        if hasattr(self, '_lr_speed_iter'):
+            del self._lr_speed_iter
+        del self.tasks["move_left"]
+
+    def move_right_released(self):
+        if hasattr(self, '_lr_speed_iter'):
+            del self._lr_speed_iter
+        del self.tasks["move_right"]
+
+    def move_up_released(self):
+        if hasattr(self, '_ud_speed_iter'):
+            del self._ud_speed_iter
+        del self.tasks["move_up"]
+
+    def move_down_released(self):
+        if hasattr(self, '_ud_speed_iter'):
+            del self._ud_speed_iter
+        del self.tasks["move_down"]

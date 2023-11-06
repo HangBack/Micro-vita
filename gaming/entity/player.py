@@ -4,9 +4,17 @@ from typing import Sequence
 
 from modules import create_model
 from ..settings.control import Settings as ControlSettings
+from ..settings.video import Settings as VideoSettings
 from const import *
 
 class Player:
+
+    class Settings:
+
+        def __init__(self, **kwargs) -> None:
+            self.control = kwargs["control"]
+            self.video = kwargs["video"]
+            pass
 
     class Behavior(object):
 
@@ -118,7 +126,12 @@ class Player:
             file.close()
 
             with open(path + ".settings.json", "r+", encoding="utf-8") as file:
-                self.settings: ControlSettings = ControlSettings(**json.load(file)['control'])
+                # 设置
+                context = json.load(file)
+                self.settings: Player.Settings = Player.Settings(
+                    control = ControlSettings(**context['control']),
+                    video = VideoSettings(**context['video'])
+                )
             file.close()
         
         self.name: str = kwargs["name"]
@@ -134,11 +147,44 @@ class Player:
 
     def init(self):
         self.model = [create_model.cube(*value) for value in self.model.values()]
+        self.attribute() # 定义属性
+        
+    def attribute(self):
+        self._start_speed = 0 # 初始速度
+        self._accelerate_speed = 0.1 # 加速度
+        self._max_speed = 1.0 # 最大速度
+    
+    @property
+    def start_speed(self):
+        return self._start_speed
+    
+    @start_speed.setter
+    def start_speed(self, value):
+        self._start_speed = value
 
-        # 加速度和最大速度
-        self.accelerate_speed = 0.1
-        self.max_speed = 1.0
+    @property
+    def accelerate_speed(self):
+        return self._accelerate_speed
+    
+    @accelerate_speed.setter
+    def accelerate_speed(self, value):
+        self._accelerate_speed = value
 
+    @property
+    def max_speed(self):
+        return self._max_speed
+    
+    @max_speed.setter
+    def max_speed(self, value):
+        self._max_speed = value
+
+    @property
+    def center_pos(self):
+        return self._center_pos
+    
+    @center_pos.setter
+    def center_pos(self, value):
+        self._center_pos = value
 
     def draw(self):
         for obj in self.model:
