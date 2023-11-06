@@ -1,0 +1,88 @@
+开发日志:
+# 修改
+1. main
+    - 移除了冗余的代码.
+
+2. gaming.event.Event
+    - 新增抽象方法
+        - trigger():
+            强制由子类实现
+    - 新增方法
+        - bind_game(game: game.Game) -> self:
+            将事件绑定到一个游戏实例，返回自身
+            - 固定参数
+                - game: game.Game, 游戏实例
+
+3. gaming.events.player.Event
+    - 移除方法
+        - move_.*([accelerate_speed[, [max_speed[, **kwargs]]]])
+    - 新增方法
+        - move_.*_pressed([accelerate_speed[, start_speed[, [max_speed[, **kwargs]]]]])
+            触发按压指定移动键相关事件后执行的命令
+            - 可选参数
+                - accelerate_speed: Union[int, float], 实数型，决定当前移动方向的加速度
+                - start_speed: Union[int, float], 实数型，决定当前移动方向的初速度
+                - max_speed: Union[int, float], 实数型，决定当前移动方向的最大速度
+                - 关键字参数
+
+        - move_.*_released()
+            触发释放指定移动键相关事件后执行的命令
+
+4. gaming.entity.player.Player:
+    - 新增类
+        - Settings:
+            数据结构，存储玩家设置相关数据
+        - Behavior:
+            数据结构，存储玩家行为（目前只包含方向行为）
+    
+    - 新增属性方法
+        - accelerate_speed: Union[int, float], 实数型，决定当前移动方向的加速度，可由setter修改。
+        - start_speed: Union[int, float], 实数型，决定当前移动方向的初速度，可由setter修改。
+        - max_speed: Union[int, float], 实数型，决定当前移动方向的最大速度，可由setter修改。
+
+    - 新增方法
+        - attribute():
+            用于初始化玩家的属性
+# 上传
+1. game.Game
+    - 属性
+        - user: gaming.entity.player.Player, 玩家实例，当前视角下执行操作的玩家，可由setter修改。
+        - players: list[gaming.entity.player.Player], 玩家实例列表，游戏中的所有玩家。
+        - events: list[gaming.event.Event], 事件列表，游戏中的所有事件。
+    - 方法
+        - init(**kwargs):
+            初始化游戏，包括初始化场景（未传入参数时，默认初始化开始界面场景）。
+            - scene: gaming.scene.Scene, 场景实例，决定了游戏实例初始化的场景是什么。
+            - user: gaming.entity.player.Player, 玩家实例，决定了游戏实例化后当前屏幕的操作玩家是谁（为多人游戏做准备）。
+
+        - add_player(player):
+            向游戏实例中加入新玩家。
+            - 固定参数
+                player: gaming.entity.player.Player, 玩家实例
+
+        - add_event(event):
+            向游戏实例中加入新事件。
+            - 固定参数
+                event: gaming.event.Event, 事件实例
+        
+        - update_display():
+            更新画面（一般由start方法调用）。
+
+        - change_scene(scene):
+            更改当前游戏场景。
+            - 固定参数
+                scene: gaming.scene.Scene, 场景实例
+
+        - reset_canvas():
+            重置画布。
+
+        - start():
+            开始游戏。
+
+2. gaming.settings.video.Settings
+    - 属性
+        - anti_aliasing: Sequence[str | None], 包含字符串和None的可变序列
+    - 方法
+        - load():
+            将设置加载到游戏中去
+            

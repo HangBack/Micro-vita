@@ -23,11 +23,11 @@ Develop log:
         - turn_the_perspective(rotation: Sequence, **kwargs):
             When the system check that user change his rotation, then it will update self.player.camera's look_at, pitch and yaw.
 
-        - forward(amount, **kwargs):
-            When user use "Forward" key(default 'W'), it will update self.player's position
+        - move_forward(amount, **kwargs):
+            When user use "move_forward" key(default 'W'), it will update self.player's position
 
-        - backward(amount, **kwargs):
-            When user use "Backward" key(default 'S'), it will update self.player's position
+        - move_backward(amount, **kwargs):
+            When user use "move_backward" key(default 'S'), it will update self.player's position
 
         - move_left(amount, **kwargs):
             When user use "Move Left" key(default 'A'), it will update self.player's position
