@@ -10,6 +10,9 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
+            "env": {
+                "PYTHONDONTWRITEBYTECODE": "1"
+            },
             "justMyCode": true
         }
     ]

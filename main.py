@@ -1,6 +1,5 @@
 
 import gaming
-import modules as config
 from game import Game
 from const import *
 
