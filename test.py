@@ -9,7 +9,8 @@ def test():
     ]
     for cube in cubes:
         cube.move(-0.025 * 100, -0.125 * 100, -1.025 * 100)
+        # cube.rotate(0, 1, 0, deg=22.5)
     cubes[1].move(0, 0.075 * 100, 0)
-    cubes[2].move(0, 0, -2.525 * 100)
+    cubes[2].move(0, 0, 0.075 * 100)
     cubes[3].move(0.075 * 100, 0, 0)
     return cubes

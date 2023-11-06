@@ -1,10 +1,13 @@
 import numpy as np
 from OpenGL.GLU import *
 from OpenGL.GL import *
+from OpenGL.GL.shaders import compileShader, compileProgram
+from OpenGL.GLUT import *
 from pygame.locals import *
 import pygame as game
+from typing import Sequence, Union
 import random
-from typing import Sequence
+import os
 
 class const:
     display = (0, 0)
@@ -16,6 +19,15 @@ class const:
     caption = f"{title} {version}"
     _NORM = np.linalg.norm
     _UNIT = lambda u: np.array(u) / const._NORM(np.array(u))
+
+def compile_shader(path):
+    with open(path + '.frag', "r") as file:
+        frag = compileShader(file.read(), GL_FRAGMENT_SHADER)
+    file.close()
+    with open(path + '.vert', "r") as file:
+         vert = compileShader(file.read(), GL_VERTEX_SHADER)
+    file.close()
+    return frag, vert
 
 def clamp_number(num,a,b):
     return max(min(num, max(a, b)), min(a, b))
