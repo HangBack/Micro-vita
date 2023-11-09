@@ -35,17 +35,49 @@ class const:
         v = np.array(u) / const._NORM(np.array(u))
         return v
     INFINITY = math.inf
-    SHADER_PATH_PREFFIX = 'resources/assets/shaders/core/'
+    SHADER_PATH_PREFFIX = 'resources/assets/shaders/core'
+
+    @staticmethod
+    def SHADER_PATH(_dir, name):
+        prefix = const.SHADER_PATH_PREFFIX
+        module = _dir.split('.')[-1]
+        return eval(f"f'{prefix}/{module}/'") + name
 
 
 def compile_shader(path: os.PathLike):
-    with open(path + '.frag', "r") as file:
-        frag = compileShader(file.read(), GL_FRAGMENT_SHADER)
-    file.close()
-    with open(path + '.vert', "r") as file:
-        vert = compileShader(file.read(), GL_VERTEX_SHADER)
-    file.close()
-    return compileProgram(vert, frag)
+    mapping = {
+        ".vert": GL_VERTEX_SHADER,
+        ".vs": GL_VERTEX_SHADER,
+        ".frag": GL_FRAGMENT_SHADER,
+        ".fs": GL_VERTEX_SHADER,
+        ".gs": GL_GEOMETRY_SHADER,
+        ".geom": GL_GEOMETRY_SHADER,
+        ".comp": GL_COMPUTE_SHADER,
+        ".tesc": GL_TESS_CONTROL_SHADER,
+        ".tese": GL_TESS_EVALUATION_SHADER,
+        ".rgen": GL_REFERENCED_BY_FRAGMENT_SHADER,
+        # ".rint": "",
+        # ".rahit": "",
+        # ".rchit": "",
+        # ".rmiss": "",
+        # ".rcall": ""
+        # ".mesh": "",
+        # ".task": ""
+    }
+    __exist = os.path.exists
+    def reader(path, typer):
+        with open(path, 'r') as file:
+            glsl = compileShader(file.read(), typer)
+        file.close()
+        return glsl
+    shaders = [
+        reader(f"{path}{ext}", typer)
+        for ext, typer in mapping.items()
+        if __exist(f"{path}{ext}")
+    ]
+    if shaders:
+        return compileProgram(*shaders)
+
 
 
 def clamp_number(num, a, b):
