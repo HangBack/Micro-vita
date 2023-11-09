@@ -1,8 +1,8 @@
 import json
 import numpy as np
-from typing import Sequence
+from typing import Iterable
 
-from modules import create_model
+from modules.models.regular import cube as Cube
 from ..settings.control import Settings as ControlSettings
 from ..settings.video import Settings as VideoSettings
 from const import *
@@ -18,15 +18,15 @@ class Player:
 
     class Behavior(object):
 
-        def __init__(self, args: Sequence) -> None:
+        def __init__(self, args: Iterable) -> None:
             self.args = args
 
-        def __mul__(self, value) -> Sequence:
+        def __mul__(self, value) -> Iterable:
             result = []
-            if isinstance(value, Sequence) and len(value) == 3:
+            if isinstance(value, Iterable) and len(value) == 3:
                 return [self.args[i] * x for i, x in enumerate(value)]
             else:
-                raise ValueError("Need a 3 element Sequence.")
+                raise ValueError("Need a 3 element Iterable.")
 
 
 
@@ -37,21 +37,33 @@ class Player:
     class Camera:
 
         def __init__(self, **kwargs) -> None:
-            self._look_at: Sequence = kwargs["camera"]["look_at"]
-            self._position: Sequence = kwargs["camera"]["position"]
-            self._up: Sequence = kwargs["camera"]["up"]
+            self._look_at: Iterable = np.array(kwargs["camera"]["look_at"], dtype=np.float32)
+            self._position: Iterable = np.array(kwargs["camera"]["position"], dtype=np.float32)
+            self._up: Iterable = np.array(kwargs["camera"]["up"], dtype=np.float32)
             self._pitch: float = kwargs["camera"]["pitch"]
             self._yaw: float = kwargs["camera"]["yaw"]
             self._roll: float = kwargs["camera"]["roll"]
+
+            self.z_vector = const._UNIT(self._position - self._look_at)
+            self.x_vector = const._UNIT(np.cross(
+                np.array([0, 1, 0], dtype=np.float32), self._z_vector
+            ))
+            self.up = np.cross(self._z_vector, self._x_vector)
             pass
+
+        @property
+        def view_matrix(self):
+            return pyrr.matrix44.create_look_at(self._position, self._look_at, self._up)
 
         def _change_euler_angle(self):
             "改变欧拉角，自动更新look_at"
             pitch_rad, yaw_rad = np.deg2rad([self._pitch, self._yaw])
-
-            self._look_at[0] = np.sin(yaw_rad) * np.cos(pitch_rad)
-            self._look_at[1] = np.sin(pitch_rad)
-            self._look_at[2] = -np.cos(yaw_rad) * np.cos(pitch_rad)
+            self.Front = np.array([0, 0, -1], dtype=np.float32)
+            self.Front[0] = np.cos(pitch_rad) * np.cos(yaw_rad)
+            self.Front[1] = np.sin(pitch_rad)
+            self.Front[2] = np.cos(pitch_rad) * np.sin(yaw_rad)
+            self.Front = const._UNIT(self.Front)
+            self.look_at = self.position + self.Front
 
 
         @property
@@ -76,7 +88,7 @@ class Player:
         @pitch.setter   
         def pitch(self, value):
             "y 夹在上下限"
-            self._pitch = clamp_number(value, -90.0, 90.0)
+            self._pitch = clamp_number(value, -89.9, 89.9)
             self._change_euler_angle() # 改变欧拉角
 
         @property
@@ -100,7 +112,8 @@ class Player:
 
         @up.setter   
         def up(self, value):
-            self._up = value
+            self._up = np.array(value, dtype=np.float32)
+            self.view_matrix # 更新视图矩阵
 
         @property
         def position(self):
@@ -108,7 +121,10 @@ class Player:
 
         @position.setter   
         def position(self, value):
-            self._position = value
+            self._position = np.array(value, dtype=np.float32)
+            self.look_at = self._position + self.Front
+            self.z_vector = const._UNIT(self._position - self._look_at)
+            self.view_matrix # 更新视图矩阵
 
         @property
         def look_at(self):
@@ -116,7 +132,29 @@ class Player:
         
         @look_at.setter
         def look_at(self, value):
-            self._look_at = value
+            self._look_at = np.array(value, dtype=np.float32)
+            self.z_vector = const._UNIT(self._position - self._look_at)
+            self.view_matrix # 更新视图矩阵
+
+        @property
+        def z_vector(self):
+            return self._z_vector
+
+        @z_vector.setter
+        def z_vector(self, value):
+            self._z_vector = np.array(value, dtype=np.float32)
+            self.x_vector = const._UNIT(np.cross(
+                np.array([0, 1, 0], dtype=np.float32), self._z_vector
+            ))
+
+        @property
+        def x_vector(self):
+            return self._x_vector
+        
+        @x_vector.setter
+        def x_vector(self, value):
+            self._x_vector = np.array(value, dtype=np.float32)
+            self.up = np.cross(self._z_vector, self._x_vector)
 
     def __init__(self, path=None, **kwargs) -> None:
         if path is not None:
@@ -135,18 +173,16 @@ class Player:
             file.close()
         
         self.name: str = kwargs["name"]
-        self.position: Sequence = kwargs["position"]
+        self.position: Iterable = kwargs["position"]
         self.role: str = kwargs["role"]
-        self.collision: Sequence = kwargs["collision"]
+        self.collision: Iterable = kwargs["collision"]
         self.model = kwargs["model"]
         self.scene = "gaming_type"
-
         self.camera: Player.Camera = Player.Camera(**kwargs)
         self.behavior: Player.Behavior = self.Behavior(kwargs["behavior"])
         self.init()
 
     def init(self):
-        self.model = [create_model.cube(*value) for value in self.model.values()]
         self.attribute() # 定义属性
         
     def attribute(self):
@@ -203,7 +239,7 @@ class Player:
             np.array([x, y, z])
         )
 
-    def rotate(self, rotation: Sequence):
+    def rotate(self, rotation: Iterable):
         "玩家转向方法"
         rotation = list(reversed(rotation))
 

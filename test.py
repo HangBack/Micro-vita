@@ -1,16 +1,25 @@
-from modules import create_model
+from modules.models.regular import cube as Cube
+from modules.models.regular import sphere as Sphere
+from gaming.scene import Scene
 import random
-def test():
+
+def test() -> Scene:
     cubes = [
-        create_model.cube(0.025 * 2 * 100, 0.025 * 2 * 100, 0.025 * 2 * 100, (1, 1, 1)),
-        create_model.cube(0.025 * 2 * 100, 1.25 * 2 * 100, 0.025 * 2 * 100, (0, 0, 1)),
-        create_model.cube(0.025 * 2 * 100, 0.025 * 2 * 100, 1.25 * 2 * 100, (0, 1, 0)),
-        create_model.cube(1.25 * 2 * 100, 0.025 * 2 * 100, 0.025 * 2 * 100, (1, 0, 0))
+        Cube(0.025 * 2 * 100, 1.25 * 2 * 100, 0.025 * 2 * 100, color=(0, 0, 1)),
+        Cube(0.025 * 2 * 100, 0.025 * 2 * 100, 1.25 * 2 * 100, color=(0, 1, 0)),
+        Cube(1.25 * 2 * 100, 0.025 * 2 * 100, 0.025 * 2 * 100, color=(1, 0, 0)),
+        # *[
+        #     Sphere((random.random() * 10, random.random() * 10, random.random() * 10), random.random() * 100)
+        #     for _ in range(100)
+        # ],
+        *[
+            Cube(*[random.random() * 10 for _ in range(3)], color=[[random.random() for _ in range(3)] for _ in range(8)])
+            for i in range(10000)
+        ]
     ]
-    for cube in cubes:
-        cube.move(-0.025 * 100, -0.125 * 100, -1.025 * 100)
-        # cube.rotate(0, 1, 0, deg=22.5)
-    cubes[1].move(0, 0.075 * 100, 0)
-    cubes[2].move(0, 0, 0.075 * 100)
-    cubes[3].move(0.075 * 100, 0, 0)
-    return cubes
+    for cube in cubes[4:]:
+        cube.move(*[random.random()* 1000 * random.randrange(-1, 2, 2) for _ in range(3)])
+        cube.rotate(*[random.randrange(0, 361) for _ in range(3)])
+    return Scene(cubes)
+
+scene = test()

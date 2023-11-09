@@ -5,7 +5,7 @@ class Event(parent):
     def __init__(self) -> None:
         self.tasks = {}
 
-    def trigger(self, **kwargs):
+    def trigger(self, tick, **kwargs):
         for task in self.tasks.values():
             if callable(task):
                 task()
@@ -75,9 +75,9 @@ class Event(parent):
         self._fb_speed_iter = clamp_number(self._fb_speed_iter + accelerate_speed, start_speed, max_speed)
         speed = self._fb_speed_iter
 
-        look_at = self.game.user.behavior * self.game.user.camera.look_at
+        look_at = self.game.user.behavior * self.game.user.camera.Front
 
-        motion = np.array(look_at) * speed
+        motion = np.array(look_at, dtype=np.float32) * speed
         self.game.user.move(*motion)
 
     def move_backward_pressed(self, accelerate_speed=None, start_speed=None, max_speed=None, **kwargs):
@@ -94,8 +94,8 @@ class Event(parent):
 
         self.move_forward_pressed(-accelerate_speed, -start_speed, -max_speed)
 
-    def move_left_pressed(self, accelerate_speed=None, start_speed=None, max_speed=None, **kwargs):
-        "玩家按压左移动事件"
+    def move_right_pressed(self, accelerate_speed=None, start_speed=None, max_speed=None, **kwargs):
+        "玩家按压右移动事件"
         if not hasattr(self, "_lr_speed_iter"):
             self._lr_speed_iter = 0
 
@@ -111,14 +111,14 @@ class Event(parent):
         self._lr_speed_iter = clamp_number(self._lr_speed_iter + accelerate_speed, start_speed, max_speed)
         speed = self._lr_speed_iter
 
-        look_at = self.game.user.behavior * self.game.user.camera.look_at
+        look_at = self.game.user.behavior * const._UNIT(np.cross(self.game.user.camera.Front, self.game.user.camera.up))
 
-        motion = rotate_vector([0, 1, 0], look_at, 90) * speed
+        motion = np.array(look_at, dtype=np.float32) * speed
         
         self.game.user.move(*motion)
 
-    def move_right_pressed(self, accelerate_speed=None, start_speed=None, max_speed=None, **kwargs):
-        "玩家按压右移动事件"
+    def move_left_pressed(self, accelerate_speed=None, start_speed=None, max_speed=None, **kwargs):
+        "玩家按压左移动事件"
 
         if start_speed is None:
             start_speed = self.game.user.start_speed
@@ -129,7 +129,7 @@ class Event(parent):
         if max_speed is None:
             max_speed = self.game.user.max_speed
         
-        self.move_left_pressed(-accelerate_speed, -start_speed, -max_speed)
+        self.move_right_pressed(-accelerate_speed, -start_speed, -max_speed)
 
     def move_up_pressed(self, accelerate_speed=None, start_speed=None, max_speed=None, **kwargs):
         "玩家按压上移动事件"
@@ -168,29 +168,35 @@ class Event(parent):
     def move_forward_released(self):
         if hasattr(self, '_fb_speed_iter'):
             del self._fb_speed_iter
-        del self.tasks["move_forward"]
+        if "move_forward" in self.tasks:
+            del self.tasks["move_forward"]
 
     def move_backward_released(self):
         if hasattr(self, '_fb_speed_iter'):
             del self._fb_speed_iter
-        del self.tasks["move_backward"]
+        if "move_backward" in self.tasks:
+            del self.tasks["move_backward"]
 
     def move_left_released(self):
         if hasattr(self, '_lr_speed_iter'):
             del self._lr_speed_iter
-        del self.tasks["move_left"]
+        if "move_left" in self.tasks:
+            del self.tasks["move_left"]
 
     def move_right_released(self):
         if hasattr(self, '_lr_speed_iter'):
             del self._lr_speed_iter
-        del self.tasks["move_right"]
+        if "move_right" in self.tasks:
+            del self.tasks["move_right"]
 
     def move_up_released(self):
         if hasattr(self, '_ud_speed_iter'):
             del self._ud_speed_iter
-        del self.tasks["move_up"]
+        if "move_up" in self.tasks:
+            del self.tasks["move_up"]
 
     def move_down_released(self):
         if hasattr(self, '_ud_speed_iter'):
             del self._ud_speed_iter
-        del self.tasks["move_down"]
+        if "move_down" in self.tasks:
+            del self.tasks["move_down"]
