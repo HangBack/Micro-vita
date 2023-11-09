@@ -4,10 +4,9 @@ import time
 
 
 
-
 class cube(model.Model):
 
-    shader: os.PathLike = '{const.SHADER_PATH_PREFFIX}cube'
+    shader: os.PathLike = const.SHADER_PATH(__name__, 'cube')
 
     def __import(self):
         ...

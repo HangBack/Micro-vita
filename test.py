@@ -14,7 +14,7 @@ def test() -> Scene:
         # ],
         *[
             Cube(*[random.random() * 10 for _ in range(3)], color=[[random.random() for _ in range(3)] for _ in range(8)])
-            for i in range(10000)
+            for i in range(100)
         ]
     ]
     for cube in cubes[4:]:
