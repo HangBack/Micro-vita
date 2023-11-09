@@ -29,9 +29,9 @@ class Model(metaclass=abc.ABCMeta):
 
     def __init__(self):
         self.vertices: 'np.ndarray'
-        self._position: 'np.ndarray' = np.array([0., 0., 0.], dtype=np.float32)
+        self._position: 'np.ndarray' = np.zeros((1,3), dtype=np.float32)
         self._scale: 'np.ndarray' = np.array([1., 1., 1.], dtype=np.float32)
-        self._color: 'np.ndarray' = np.array([0., 0., 0.], dtype=np.float32)
+        self._color: 'np.ndarray' = np.zeros((1,3), dtype=np.float32)
         
     
     def __lt__(self, other):

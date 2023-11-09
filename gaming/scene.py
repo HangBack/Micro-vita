@@ -11,6 +11,7 @@ class Scene:
         self._VBO: list = []  # 顶点缓冲对象
         self._EBO: list = [] # 元素缓冲对象
         self.__models = models
+        self._rotation = np.zeros((1,3), dtype=np.float32)
         pass
 
     def init(self):
@@ -89,7 +90,15 @@ class Scene:
             glDrawElementsInstanced(GL_TRIANGLES, model.count, GL_UNSIGNED_INT, None, model.instancecount)
             glUseProgram(0)
 
-    def rotate(self, /, x: float | int = None, y: float | int = None, z: float | int = None):
+    @property
+    def rotation(self):
+        return self._rotation
+    
+    @rotation.setter
+    def rotation(self, value):
+        self._rotation = np.array(value, dtype=np.float32)
+
+    def rotate(self, x: float | int = None, y: float | int = None, z: float | int = None):
         rot_x = pyrr.matrix44.create_from_x_rotation(self.rotation[0] + x if x else 0)
         rot_y = pyrr.matrix44.create_from_y_rotation(self.rotation[1] + y if y else 0)
         rot_z = pyrr.matrix44.create_from_z_rotation(self.rotation[2] + z if z else 0)
