@@ -1,17 +1,20 @@
 from const import *
 
+def __import():
+    global Model, Game
+    from modules.model import Model
+    from game import Game
+
 class Scene:
 
-    def __import(self):
-        global Model, Game
-        from modules.model import Model
-        from game import Game
-
-    def __init__(self, models: list['Model']) -> None:
+    def __init__(self, models: list['Model'] | Callable) -> None:
+        if callable(models):
+            models: list['Model'] = models()
         self._VBO: list = []  # 顶点缓冲对象
         self._EBO: list = [] # 元素缓冲对象
         self.__models = models
         self._rotation = np.zeros(3, dtype=np.float32)
+        self._scale = np.ones(3, dtype=np.float32)
         pass
 
     def init(self):
@@ -83,7 +86,8 @@ class Scene:
             glUniformMatrix4fv(self.view_loc, 1, GL_FALSE, self.game.user.camera.view_matrix)
             
             self.model_loc = glGetUniformLocation(model.shader, "model")
-            glUniformMatrix4fv(self.model_loc, 1, GL_FALSE, self.rotate(0.01, 0.01, 0.01))
+            glUniformMatrix4fv(self.model_loc, 1, GL_FALSE, self.spin(0.01, 0.01, 0.01))
+            glUniformMatrix4fv(self.model_loc, 1, GL_FALSE, self.resize(-0.001, -0.001, -0.001))
 
             self.projection_loc = glGetUniformLocation(model.shader, "projection")
             glUniformMatrix4fv(self.projection_loc, 1, GL_FALSE, self.game.projection)
@@ -98,14 +102,37 @@ class Scene:
     def rotation(self, value):
         self._rotation = np.array(value, dtype=np.float32)
 
-    def rotate(self, x: float | int = None, y: float | int = None, z: float | int = None):
-        self.rotation[0] += x if x is not None else 0
-        self.rotation[1] += y if y is not None else 0
-        self.rotation[2] += z if z is not None else 0
+    @property
+    def scale(self):
+        return self._scale
+    
+    @scale.setter
+    def scale(self, value):
+        self._scale = np.array(value, dtype=np.float32)
+
+    def spin(self, x: float | int = 0, y: float | int = 0, z: float | int = 0):
+        self.rotation = self.rotation + np.array([x, y, z], dtype=np.float32)
         rot_x = pyrr.matrix44.create_from_x_rotation(self.rotation[0])
         rot_y = pyrr.matrix44.create_from_y_rotation(self.rotation[1])
         rot_z = pyrr.matrix44.create_from_z_rotation(self.rotation[2])
         return rot_z @ rot_y @ rot_x
+
+    def rotate(self, x: float | int = 0, y: float | int = 0, z: float | int = 0):
+        self.rotation = np.array([x, y, z], dtype=np.float32)
+        rot_x = pyrr.matrix44.create_from_x_rotation(self.rotation[0])
+        rot_y = pyrr.matrix44.create_from_y_rotation(self.rotation[1])
+        rot_z = pyrr.matrix44.create_from_z_rotation(self.rotation[2])
+        return rot_z @ rot_y @ rot_x
+
+    def resize(self, x: float | int = 0, y: float | int = 0, z: float | int = 0):
+        self.scale = self.scale + np.array([x, y, z], dtype=np.float32)
+        scale = pyrr.matrix44.create_from_scale(self.scale)
+        return scale
+
+    def zoom(self, x: float | int = 0, y: float | int = 0, z: float | int = 0):
+        self.scale = self.scale * np.array([x, y, z], dtype=np.float32)
+        scale = pyrr.matrix44.create_from_scale(self.scale)
+        return scale
 
     def bind_game(self, game: 'Game'):
         self.game = game

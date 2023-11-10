@@ -6,9 +6,10 @@ import time
 
 class cube(model.Model):
 
-    shader: os.PathLike = const.SHADER_PATH(__name__, 'cube')
+    shader = const.SHADER_PATH(__name__, 'cube')
 
     def __import(self):
+
         ...
 
     def __init__(
@@ -62,10 +63,6 @@ class cube(model.Model):
         self.color = color_norm(color, self.vertices)
         self.texture = texture
         self.mode = mode
-
-    def draw(self):
-        "预绘制模型"
-        ...
 
     @property
     def modelType(self):

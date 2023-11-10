@@ -13,6 +13,7 @@
             null,
             "MSAA 4",
             "FXAA"
-        ]
+        ],
+        "fovy": 90.0
     }
 }

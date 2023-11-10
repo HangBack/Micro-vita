@@ -12,6 +12,7 @@ from PIL import Image as ImageObject
 import pygame as game
 from typing import Sequence
 from typing import Iterable
+from typing import Callable
 from typing import NoReturn
 from typing import Union
 
@@ -22,20 +23,19 @@ import pyrr
 
 
 class const:
-    DISPLAY = (0, 0)
-    FOVY = 90
-    ZNEAR = .0005
-    ZFAR = 2000.
     TITLE = "Micro vita 2d"
     VERSION = "demo 1.0"
     CAPTION = f"{TITLE} {VERSION}"
-    _NORM = np.linalg.norm
-    def _UNIT(u: Sequence) -> Sequence:
-        "输入向量u，返回单位向量v"
-        v = np.array(u) / const._NORM(np.array(u))
-        return v
     INFINITY = math.inf
     SHADER_PATH_PREFFIX = 'resources/assets/shaders/core'
+
+    
+    @staticmethod
+    def normalize(u: Sequence) -> Sequence:
+        "输入向量u，返回单位向量v"
+        u_vector = np.array(u)
+        v = u_vector / np.linalg.norm(u_vector)
+        return v
 
     @staticmethod
     def SHADER_PATH(_dir, name):
@@ -90,7 +90,7 @@ def rotate_vector(u, v, deg=None, rad=None) -> Sequence:
     if deg is not None:
         rad = np.deg2rad(deg)
     # 单位化
-    u = const._UNIT(u)
+    u = const.normalize(u)
 
     # 投影向量
     v_proj = np.dot(v, u) * u

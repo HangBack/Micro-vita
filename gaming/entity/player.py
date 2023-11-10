@@ -12,8 +12,8 @@ class Player:
     class Settings:
 
         def __init__(self, **kwargs) -> None:
-            self.control = kwargs["control"]
-            self.video = kwargs["video"]
+            self.control: ControlSettings = kwargs["control"]
+            self.video: VideoSettings = kwargs["video"]
             pass
 
     class Behavior(object):
@@ -37,15 +37,18 @@ class Player:
     class Camera:
 
         def __init__(self, **kwargs) -> None:
-            self._look_at: Iterable = np.array(kwargs["camera"]["look_at"], dtype=np.float32)
             self._position: Iterable = np.array(kwargs["camera"]["position"], dtype=np.float32)
+            self._look_at: Iterable = np.array(kwargs["camera"]["look_at"], dtype=np.float32)
             self._up: Iterable = np.array(kwargs["camera"]["up"], dtype=np.float32)
             self._pitch: float = kwargs["camera"]["pitch"]
             self._yaw: float = kwargs["camera"]["yaw"]
             self._roll: float = kwargs["camera"]["roll"]
+            self._front = np.array([0., 0., -1.], dtype=np.float32)
+            self.front = True
+            self.view_matrix = True
 
-            self.z_vector = const._UNIT(self._position - self._look_at)
-            self.x_vector = const._UNIT(np.cross(
+            self.z_vector = const.normalize(self._position - self._look_at)
+            self.x_vector = const.normalize(np.cross(
                 np.array([0, 1, 0], dtype=np.float32), self._z_vector
             ))
             self.up = np.cross(self._z_vector, self._x_vector)
@@ -53,18 +56,29 @@ class Player:
 
         @property
         def view_matrix(self):
-            return pyrr.matrix44.create_look_at(self._position, self._look_at, self._up)
-
-        def _change_euler_angle(self):
-            "改变欧拉角，自动更新look_at"
-            pitch_rad, yaw_rad = np.deg2rad([self._pitch, self._yaw])
-            self.Front = np.array([0, 0, -1], dtype=np.float32)
-            self.Front[0] = np.cos(pitch_rad) * np.cos(yaw_rad)
-            self.Front[1] = np.sin(pitch_rad)
-            self.Front[2] = np.cos(pitch_rad) * np.sin(yaw_rad)
-            self.Front = const._UNIT(self.Front)
-            self.look_at = self.position + self.Front
-
+            return pyrr.matrix44.create_look_at(*self._view_matrix)
+        
+        @view_matrix.setter
+        def view_matrix(self, value):
+            if value :
+                self._view_matrix = [self._position, self._look_at, self._up]
+            else:
+                raise ValueError("Not writable except bool True")
+        
+        @property
+        def front(self):
+            return self._front
+        
+        @front.setter
+        def front(self, value):
+            if value :
+                pitch_rad, yaw_rad = np.deg2rad([self._pitch, self._yaw])
+                self._front[0] = np.cos(pitch_rad) * np.cos(yaw_rad)
+                self._front[1] = np.sin(pitch_rad)
+                self._front[2] = np.cos(pitch_rad) * np.sin(yaw_rad)
+            else:
+                self._front = np.array(value, dtype=np.float32)
+            self.look_at = self.position + self._front
 
         @property
         def yaw(self):
@@ -79,7 +93,7 @@ class Player:
                 self._yaw += 360.0
             else:
                 self._yaw = value
-            self._change_euler_angle() # 改变欧拉角
+            self.front = True
 
         @property
         def pitch(self):
@@ -89,7 +103,7 @@ class Player:
         def pitch(self, value):
             "y 夹在上下限"
             self._pitch = clamp_number(value, -89.9, 89.9)
-            self._change_euler_angle() # 改变欧拉角
+            self.front = True
 
         @property
         def roll(self):
@@ -104,7 +118,7 @@ class Player:
                 self.roll = 360.0
             else:
                 self.roll = value
-            self._change_euler_angle() # 改变欧拉角
+            self.front = True
 
         @property
         def up(self):
@@ -113,7 +127,7 @@ class Player:
         @up.setter   
         def up(self, value):
             self._up = np.array(value, dtype=np.float32)
-            self.view_matrix # 更新视图矩阵
+            self.view_matrix = True # 更新视图矩阵
 
         @property
         def position(self):
@@ -122,9 +136,9 @@ class Player:
         @position.setter   
         def position(self, value):
             self._position = np.array(value, dtype=np.float32)
-            self.look_at = self._position + self.Front
-            self.z_vector = const._UNIT(self._position - self._look_at)
-            self.view_matrix # 更新视图矩阵
+            self.look_at = self._position + self._front
+            self.z_vector = const.normalize(self._position - self.look_at)
+            self.view_matrix = True # 更新视图矩阵
 
         @property
         def look_at(self):
@@ -133,8 +147,8 @@ class Player:
         @look_at.setter
         def look_at(self, value):
             self._look_at = np.array(value, dtype=np.float32)
-            self.z_vector = const._UNIT(self._position - self._look_at)
-            self.view_matrix # 更新视图矩阵
+            self.z_vector = const.normalize(self.position - self._look_at)
+            self.view_matrix = True # 更新视图矩阵
 
         @property
         def z_vector(self):
@@ -143,7 +157,7 @@ class Player:
         @z_vector.setter
         def z_vector(self, value):
             self._z_vector = np.array(value, dtype=np.float32)
-            self.x_vector = const._UNIT(np.cross(
+            self.x_vector = const.normalize(np.cross(
                 np.array([0, 1, 0], dtype=np.float32), self._z_vector
             ))
 

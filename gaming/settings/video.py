@@ -5,6 +5,7 @@ class Settings:
 
     def __init__(self, **kwargs) -> None:
         self.anti_aliasing: Sequence[str | None] = kwargs["anti_aliasing"]
+        self.fovy: Sequence[str | None] = kwargs["fovy"]
 
         self.load()
         pass

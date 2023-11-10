@@ -12,7 +12,7 @@ out vec4 out_color;
 void main(){
     switch(0){
         case 0:
-            out_color = vec4(light_color * object_color, 1.0);
+            out_color = vec4(vec3(1.0) * object_color, 1.0);
             break;
         case 1:
             out_color = vec4(texture2D(textureSampler, texture_coord));

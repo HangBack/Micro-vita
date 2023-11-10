@@ -1,37 +1,60 @@
 import abc
 from const import *
 
+
+
+def __import():
+    global Model, Scene, ShaderProgram
+    from modules.model import Model
+    from gaming.scene import Scene
+    from OpenGL.GL.shaders import ShaderProgram
+    
+
+class Material:
+
+    def __init__(self, **kwargs) -> None:
+        self.diffuse = getvalue(kwargs, "diffuse") # 漫反射颜色
+        self.specular = getvalue(kwargs, "specular") # 高光反射颜色
+
+    @property
+    def diffuse(self):
+        return self._diffuse
+    
+    @diffuse.setter
+    def diffuse(self, value):
+        if value:
+            self._diffuse = np.ones(3, dtype=np.float32)
+        else:
+            self._diffuse = np.array(value, dtype=np.float32)
+
+    @property
+    def specular(self):
+        return self._specular
+    
+    @specular.setter
+    def specular(self, value):
+        if value:
+            self._specular = np.ones(3, dtype=np.float32)
+        else:
+            self._specular = np.array(value, dtype=np.float32)
+                                      
+
 class Model(metaclass=abc.ABCMeta):
 
     shader: os.PathLike
-
-    def __import(self):
-        global Model, Scene, ShaderProgram
-        from modules.model import Model
-        from gaming.scene import Scene
-        from OpenGL.GL.shaders import ShaderProgram
-
-    class Material:
-
-        def __init__(self, **kwargs) -> None:
-            self.diffuse = kwargs["diffuse"] # 漫反射颜色
-            self.specular = kwargs["specular"] # 高光反射颜色
-        
-    @abc.abstractmethod
-    def draw(self):
-        "绘制模型"
-        ...
         
     @abc.abstractmethod
     def modelType(self):
         "模型类型，决定模型的优先级"
         ...
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.vertices: 'np.ndarray'
-        self._position: 'np.ndarray' = np.zeros(3, dtype=np.float32)
-        self._scale: 'np.ndarray' = np.array([1., 1., 1.], dtype=np.float32)
-        self._color: 'np.ndarray' = np.zeros(3, dtype=np.float32)
+        self._position: 'np.ndarray' = np.zeros(3, dtype=np.float32) # 模型位置
+        self._scale: 'np.ndarray' = np.ones(3, dtype=np.float32) # 模型缩放率
+        self._color: 'np.ndarray' = np.zeros(3, dtype=np.float32) # 模型物体色彩
+        self._center: 'np.ndarray' = np.zeros(3, dtype=np.float32) # 模型中心点
+        self._texture: Material = Material(**kwargs)
         
     
     def __lt__(self, other):
@@ -47,13 +70,13 @@ class Model(metaclass=abc.ABCMeta):
     def move(self, x: float | int, y: float | int, z: float | int):
         self.position += np.array([x, y, z], dtype=np.float32)
 
-    def rotate(self, x: float | int = None, y: float | int = None, z: float | int = None):
+    def rotate(self, x: float | int = 0, y: float | int = 0, z: float | int = 0):
         for v in self.vertices:
-            if x is not None:
+            if x:
                 rotate_vector((1, 0, 0), v, deg=x)
-            if y is not None:
+            if y:
                 rotate_vector((0, 1, 0), v, deg=y)
-            if z is not None:
+            if z:
                 rotate_vector((0, 0, 1), v, deg=z)
 
     def bind_scene(self, scene: 'Scene'):
@@ -62,15 +85,18 @@ class Model(metaclass=abc.ABCMeta):
         return self
         
     @property
-    def view_matrix(self):
-        return self._view_matrix
+    def model_matrix(self):
+        "模型矩阵"
+        return self._model_matrix
 
-    @view_matrix.setter
-    def view_matrix(self, value):
-        self._view_matrix = np.array(value, dtype=np.float32)
+    @model_matrix.setter
+    def model_matrix(self, value):
+        self._model_matrix = np.array(value, dtype=np.float32)
+
 
     @property
     def position(self):
+        "位置"
         return self._position
 
     @position.setter
@@ -79,6 +105,7 @@ class Model(metaclass=abc.ABCMeta):
 
     @property
     def translation(self):
+        "当前位移"
         return self._translation
     
     @translation.setter
@@ -87,20 +114,27 @@ class Model(metaclass=abc.ABCMeta):
         self.position = self.position + self._translation
 
     @property
+    def scale(self):
+        "缩放率"
+        return self._scale
+
+    @scale.setter
+    def scale(self, value):
+        self._scale = value
+
+    @property
     def pitch(self):
+        "仰俯角"
         return self._pitch
 
     @pitch.setter
     def pitch(self, value):
         self._pitch = value
 
-    def __x_rotation(self):
-        return
 
-    @property
-    def scale(self):
-        return self._scale
 
-    @scale.setter
-    def scale(self, value):
-        self._scale = value
+def getvalue(data: dict, key: str) -> bool:
+    if key in data.keys():
+        return data[key]
+    else:
+        return True

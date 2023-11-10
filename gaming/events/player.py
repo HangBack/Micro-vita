@@ -75,7 +75,7 @@ class Event(parent):
         self._fb_speed_iter = clamp_number(self._fb_speed_iter + accelerate_speed, start_speed, max_speed)
         speed = self._fb_speed_iter
 
-        look_at = self.game.user.behavior * self.game.user.camera.Front
+        look_at = self.game.user.behavior * self.game.user.camera._front
 
         motion = np.array(look_at, dtype=np.float32) * speed
         self.game.user.move(*motion)
@@ -111,7 +111,7 @@ class Event(parent):
         self._lr_speed_iter = clamp_number(self._lr_speed_iter + accelerate_speed, start_speed, max_speed)
         speed = self._lr_speed_iter
 
-        look_at = self.game.user.behavior * const._UNIT(np.cross(self.game.user.camera.Front, self.game.user.camera.up))
+        look_at = self.game.user.behavior * const.normalize(np.cross(self.game.user.camera._front, self.game.user.camera.up))
 
         motion = np.array(look_at, dtype=np.float32) * speed
         
