@@ -9,13 +9,27 @@ flat in int color_status;
 
 out vec4 out_color;
 
+vec3 lightColor;
+vec4 final_texture;
+
 void main(){
-    switch(0){
+    final_texture = texture2D(textureSampler, texture_coord);
+
+    if (
+        light_color.x < 0.05 && 
+        light_color.y < 0.05 && 
+        light_color.z < 0.05
+    ) 
+        lightColor = vec3(0.05);
+    else 
+        lightColor = light_color;
+
+    switch(color_status){
         case 0:
             out_color = vec4(vec3(1.0) * object_color, 1.0);
             break;
         case 1:
-            out_color = vec4(texture2D(textureSampler, texture_coord));
+            out_color = final_texture * vec4(lightColor, 1.0);
             break;
     }
 }

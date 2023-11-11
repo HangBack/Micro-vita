@@ -52,7 +52,6 @@ class Model(metaclass=abc.ABCMeta):
         self.vertices: 'np.ndarray'
         self._position: 'np.ndarray' = np.zeros(3, dtype=np.float32) # 模型位置
         self._scale: 'np.ndarray' = np.ones(3, dtype=np.float32) # 模型缩放率
-        self._color: 'np.ndarray' = np.zeros(3, dtype=np.float32) # 模型物体色彩
         self._center: 'np.ndarray' = np.zeros(3, dtype=np.float32) # 模型中心点
         self._texture: Material = Material(**kwargs)
         

@@ -18,7 +18,7 @@ class cube(model.Model):
         width: int | float,
         height: int | float,
         texture: ImageObject.Image | None = None,
-        color: Sequence[Sequence[int | float]] |
+        colors: Sequence[Sequence[int | float]] |
         Sequence[int | float] = (1, 1, 1),
         mode: str = 'solid'
     ) -> None:
@@ -60,7 +60,7 @@ class cube(model.Model):
         
         """
         # 满足颜色需求
-        self.color = color_norm(color, self.vertices)
+        self.colors = colors
         self.texture = texture
         self.mode = mode
 
@@ -116,29 +116,13 @@ class sphere(model.Model):
     def modelType(self):
         "cube优先级：1"
         return 1
+    
 
-
-def color_norm(color, vertices):
-    if isinstance(color[0], Iterable):
-        result = np.array([
-            *color,
-            *[
-                color[-1]
-                for _ in range(len(color), len(vertices))
-            ]
-        ], dtype=np.float32)  # color[i][x] -> color[j][x]
-    else:
-        result = np.array([
-            color
-            for _ in range(len(vertices))
-        ], dtype=np.float32)
-    return result
-
-def vertice_norm(vertices: list[list[float | int]], color):
+def vertice_norm(vertices: list[list[float | int]], colors):
     vertices = [list(vertice) for vertice in vertices]
     result: np.ndarray[np.float32] = np.array([
         # [[coordinate + rgb]...] -> [[*coordinate, *rgb]...]
-        tuple(coordinate + list(color[i]))
+        tuple(coordinate + list(colors[i]))
         for i, coordinate in enumerate(vertices)
     ], dtype=np.float32)
     return result

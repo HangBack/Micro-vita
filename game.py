@@ -82,7 +82,7 @@ class Game:
                     self._ZNEAR, 
                     self._ZFAR
                 )
-        self.__scene = scene.bind_game(self).init()
+        self.__scene = scene(self).bind_game(self).init()
         self._tick_iter = self._tick
         glCullFace(GL_BACK)
         glEnable(GL_DEPTH_TEST)  # 启用深度测试

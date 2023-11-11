@@ -141,7 +141,7 @@ class Game:
 
 
 def main():
-    GAME = Game('resources/assets/shaders/core/cube', 'Demo')
+    GAME = Game('resources/assets/shaders/core/regular/cube', 'Demo')
     GAME.load_cube()
     glClearColor(0.1, 0.5, 1.0, 1.0)
     glCullFace(GL_BACK)
