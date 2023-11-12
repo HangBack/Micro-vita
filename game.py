@@ -4,7 +4,7 @@ from const import *
 def __import():
     global gaming
     import gaming
-    
+
 
 class Game:
 
@@ -274,7 +274,7 @@ class Game:
     容器
     """
 
-    class __Container(object):  # 容器父类
+    class __Container(object):    # 容器父类
 
         def __init__(self, elements: list = []) -> None:
             self.__elements = elements
@@ -290,20 +290,17 @@ class Game:
         def remove(self, __value):
             self.__elements.remove(__value)
 
-    # 玩家容器
-    class __Players(__Container):
+    class __Players(__Container): # 玩家容器
 
         def __init__(self, players: list['gaming.entity.player.Player'] | list = []) -> None:
             super().__init__(players)
 
-    # 事件容器
-    class __Events(__Container):
+    class __Events(__Container):  # 事件容器
 
         def __init__(self, events: list['gaming.event.Event'] | list = []) -> None:
             super().__init__(events)
 
-    # 任务容器
-    class __Cyclers(__Container):
+    class __Cyclers(__Container): # 任务容器
 
         def __init__(self, cyclers: list['Callable'] | list = []) -> None:
             super().__init__(cyclers)
