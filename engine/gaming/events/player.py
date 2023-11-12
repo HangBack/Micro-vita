@@ -1,4 +1,4 @@
-from ..event import Event as parent
+from engine.gaming.event import Event as parent
 from engine.const import *
 
 

@@ -1,6 +1,5 @@
 from engine.const import *
-from .. import model
-import time
+from engine.modules import model
 
 
 

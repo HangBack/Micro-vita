@@ -1,9 +1,9 @@
 from engine.const import *
 
-from ..settings.control import Settings as ControlSettings
-from ..settings.video import Settings as VideoSettings
+from engine.gaming.settings.control import Settings as ControlSettings
+from engine.gaming.settings.video import Settings as VideoSettings
 
-from ..events.player import Event
+from engine.gaming.events.player import Event
 
 def __import():
     global Game

@@ -1,5 +1,5 @@
 from engine.const import *
-from ..setting import Setting
+from engine.gaming.setting import Setting
 
 def __import():
     global Game
