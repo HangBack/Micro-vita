@@ -202,16 +202,13 @@ class Game:
                 self._ZFAR
             )
         self.__scene = self.scenes[0]  # 场景绑定并初始化
-
-        for iii in self.scenes:
-            iii
         self._tick_iter = self._tick  # 游戏tick迭代
 
         glCullFace(GL_BACK)          # 剔除背面
         glEnable(GL_DEPTH_TEST)      # 启用深度测试
         game.key.set_repeat(10, 15)  # 按键重复
 
-        self.__main_cycler = True  # 允许主游戏循环
+        self.__main_cycler = True    # 允许主游戏循环
 
     def start(self) -> NoReturn:
         """
@@ -244,7 +241,7 @@ class Game:
 
         `每个游戏实例都必须通过end方法结束游戏`
         """
-        self.__main_cycler = False
+        self.__main_cycler = False   # 终止主游戏循环
         self.save()  # 自动保存
         game.quit()
         logging.info("游戏结束")
@@ -287,10 +284,6 @@ class Game:
         scene.bind_game(self).init()
         self.scenes.append(scene)
         return scene
-
-    """
-    容器
-    """
 
     """
     功能方法
