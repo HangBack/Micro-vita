@@ -1,6 +1,11 @@
 from const import *
 
 
+def __import():
+    global gaming
+    import gaming
+    
+
 class Game:
 
     def __init__(self) -> None:
@@ -316,7 +321,3 @@ class Game:
         game.display.flip()
         game.time.wait(10)  # 更新频率
 
-
-def __import():
-    global gaming
-    import gaming

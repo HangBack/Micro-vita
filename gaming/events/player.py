@@ -1,6 +1,11 @@
 from ..event import Event as parent
 from const import *
 
+
+def __import():
+    global gaming
+    import gaming
+
 class Event(parent):
 
     def __init__(self) -> None:
@@ -209,8 +214,3 @@ class Event(parent):
 
     def bind_player(self, player: 'gaming.entity.player.Player'):
         self.player = player
-
-
-def __import():
-    global gaming
-    import gaming

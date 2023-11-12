@@ -8,10 +8,6 @@ class cube(model.Model):
 
     shader = const.SHADER_PATH(__name__, 'cube')
 
-    def __import(self):
-
-        ...
-
     def __init__(
         self,
         length: int | float,
