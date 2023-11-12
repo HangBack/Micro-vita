@@ -1,11 +1,18 @@
 from const import *
+from ..setting import Setting
 
-class Settings:
+def __import():
+    global Game
+    from game import Game
+
+class Settings(Setting):
 
 
     def __init__(self, **kwargs) -> None:
+        self.context = kwargs['context']
+        kwargs = kwargs['context']['video']
         self.anti_aliasing: Sequence[str | None] = kwargs["anti_aliasing"]
-        self.fovy: Sequence[str | None] = kwargs["fovy"]
+        self._fovy: Sequence[str | None] = kwargs["fovy"]
 
         self.load()
         pass
@@ -20,3 +27,16 @@ class Settings:
                 ...
             case None:
                 ...
+            
+    def bind_game(self, game: 'Game'):
+        self.game = game
+
+    @property
+    def fovy(self):
+        return self._fovy
+
+    @fovy.setter
+    def fovy(self, value):
+        self._fovy = value
+        self.game.FOVY = value
+        self.context['fovy'] = value
