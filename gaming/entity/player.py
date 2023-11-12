@@ -201,11 +201,11 @@ class Player:
         self.scene = "gaming_type"
         self.camera: Player.Camera = Player.Camera(**kwargs)
         self.behavior: Player.Behavior = self.Behavior(kwargs["behavior"])
-        self._event: Event = Event()
+        self.event: Event = Event()
         self.init()
 
     def init(self):
-        self._event.bind_player(self)
+        self.event.bind_player(self)
         self.attribute() # 定义属性
         
     def attribute(self):
@@ -281,6 +281,6 @@ class Player:
     def bind_game(self, game: 'Game'):
         self.game = game
         self.settings.bind_game(game)
-        self._event.bind_game(game)
+        self.event.bind_game(game)
         self.game.add_player(self)
         self.game.add_cycler(self.run)
