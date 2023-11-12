@@ -99,7 +99,9 @@ def rotate_vector(
         deg: float | int = None,
         rad: float | int = None
 ) -> Sequence:
-    "空间向量v绕轴向量u旋转deg度或rad弧度"
+    """
+    空间向量v绕轴向量u旋转deg度或rad弧度
+    """
     u, v = np.array(u), np.array(v)
     if deg is not None:
         rad = np.deg2rad(deg)
