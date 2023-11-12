@@ -21,7 +21,7 @@ def gradient(A, B, Step):
         for N in range(Step + 1)
     ]
 
-def test(game: 'Game') -> Scene:
+def test() -> Scene:
     cubes: list[Cube] = []
     mm = 100
     ml = mm * 7

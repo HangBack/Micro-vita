@@ -8,6 +8,11 @@ def __import():
 
 class Game:
 
+    __Players = NewType('Players', list['gaming.entity.player.Player'])  # 玩家容器
+    __Cyclers = NewType('Cyclers', list['Callable'])                    # 循环容器
+    __Events = NewType('Events',   list['gaming.event.Event'])          # 事件容器
+    __Scenes = NewType('Scenes',   list['gaming.scene.Scene'])          # 场景容器
+
     def __init__(self) -> None:
         game.init()  # 初始化pygame
 
@@ -34,9 +39,10 @@ class Game:
 
         game.display.set_caption(const.CAPTION)  # 游戏标题
 
-        self.cyclers = self.__Cyclers()  # 循环任务列表
-        self.players = self.__Players()  # 玩家列表
-        self.events = self.__Events()    # 事件列表
+        self.cyclers: Game.__Cyclers = Game.__Cyclers([])  # 循环列表
+        self.players: Game.__Players = Game.__Players([])  # 玩家列表
+        self.events: Game.__Events = Game.__Events([])     # 事件列表
+        self.scenes: Game.__Scenes = Game.__Scenes([])     # 场景列表
 
     """
     游戏属性
@@ -175,7 +181,7 @@ class Game:
     游戏进程
     """
 
-    def init(self, scene: 'gaming.scene.Scene', **kwargs):
+    def init(self, **kwargs):
         """
         初始化游戏
 
@@ -195,8 +201,10 @@ class Game:
                 self._ZNEAR,
                 self._ZFAR
             )
-        self.__scene = scene(self).bind_game(self).init()  # 场景绑定并初始化
+        self.__scene = self.scenes[0]  # 场景绑定并初始化
 
+        for iii in self.scenes:
+            iii
         self._tick_iter = self._tick  # 游戏tick迭代
 
         glCullFace(GL_BACK)          # 剔除背面
@@ -246,15 +254,15 @@ class Game:
         "保存游戏"
         logging.info("保存游戏中...")
 
-    def add_player(
+    def add_player(     # 加入玩家
             self,
             player: 'gaming.entity.player.Player'
     ) -> 'gaming.entity.player.Player':
 
-        self.players.append(player)      # 玩家加入游戏
+        self.players.append(player)
         return player
 
-    def add_event(
+    def add_event(      # 加入事件
             self,
             event: 'gaming.event.Event'
     ) -> 'gaming.event.Event':
@@ -262,7 +270,7 @@ class Game:
         self.events.append(event)
         return event
 
-    def add_cycler(
+    def add_cycler(     # 加入循环
             self,
             cycler: 'Callable'
     ) -> 'Callable':
@@ -270,40 +278,19 @@ class Game:
         self.cyclers.append(cycler)
         return cycler
 
+    def add_scene(      # 加入场景
+            self,
+            scene: 'gaming.scene.Scene'
+    ) -> 'gaming.scene.Scene':
+        if callable(scene):
+            scene = scene()
+        scene.bind_game(self).init()
+        self.scenes.append(scene)
+        return scene
+
     """
     容器
     """
-
-    class __Container(object):    # 容器父类
-
-        def __init__(self, elements: list = []) -> None:
-            self.__elements = elements
-            pass
-
-        def __iter__(self):
-            for element in self.__elements:
-                yield element
-
-        def append(self, __object):
-            self.__elements.append(__object)
-
-        def remove(self, __value):
-            self.__elements.remove(__value)
-
-    class __Players(__Container): # 玩家容器
-
-        def __init__(self, players: list['gaming.entity.player.Player'] | list = []) -> None:
-            super().__init__(players)
-
-    class __Events(__Container):  # 事件容器
-
-        def __init__(self, events: list['gaming.event.Event'] | list = []) -> None:
-            super().__init__(events)
-
-    class __Cyclers(__Container): # 任务容器
-
-        def __init__(self, cyclers: list['Callable'] | list = []) -> None:
-            super().__init__(cyclers)
 
     """
     功能方法
@@ -317,4 +304,3 @@ class Game:
         "更新画布"
         game.display.flip()
         game.time.wait(10)  # 更新频率
-
