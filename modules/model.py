@@ -22,7 +22,7 @@ class Material:
     
     @diffuse.setter
     def diffuse(self, value):
-        if value:
+        if value is True:
             self._diffuse = np.ones(3, dtype=np.float32)
         else:
             self._diffuse = np.array(value, dtype=np.float32)
@@ -33,7 +33,7 @@ class Material:
     
     @specular.setter
     def specular(self, value):
-        if value:
+        if value is True:
             self._specular = np.ones(3, dtype=np.float32)
         else:
             self._specular = np.array(value, dtype=np.float32)
@@ -50,10 +50,16 @@ class Model(metaclass=abc.ABCMeta):
 
     def __init__(self, **kwargs):
         self.vertices: 'np.ndarray'
+        self.indices: 'np.ndarray'
+        self.colors: 'np.ndarray'
+
+        
+        self._texture: Material = Material(**kwargs) # 模型纹理
+
+
         self._position: 'np.ndarray' = np.zeros(3, dtype=np.float32) # 模型位置
-        self._scale: 'np.ndarray' = np.ones(3, dtype=np.float32) # 模型缩放率
         self._center: 'np.ndarray' = np.zeros(3, dtype=np.float32) # 模型中心点
-        self._texture: Material = Material(**kwargs)
+        self._scale: 'np.ndarray' = np.ones(3, dtype=np.float32) # 模型缩放率
         
     
     def __lt__(self, other):

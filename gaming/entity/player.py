@@ -1,11 +1,13 @@
-import json
-import numpy as np
-from typing import Iterable
+from const import *
 
-from modules.models.regular import cube as Cube
 from ..settings.control import Settings as ControlSettings
 from ..settings.video import Settings as VideoSettings
-from const import *
+
+from ..events.player import Event
+
+def __import():
+    global Game
+    from game import Game
 
 class Player:
 
@@ -15,6 +17,10 @@ class Player:
             self.control: ControlSettings = kwargs["control"]
             self.video: VideoSettings = kwargs["video"]
             pass
+
+        def bind_game(self, game):
+            self.control.bind_game(game)
+            self.video.bind_game(game)
 
     class Behavior(object):
 
@@ -60,7 +66,7 @@ class Player:
         
         @view_matrix.setter
         def view_matrix(self, value):
-            if value :
+            if value is True:
                 self._view_matrix = [self._position, self._look_at, self._up]
             else:
                 raise ValueError("Not writable except bool True")
@@ -71,7 +77,7 @@ class Player:
         
         @front.setter
         def front(self, value):
-            if value :
+            if value is True:
                 pitch_rad, yaw_rad = np.deg2rad([self._pitch, self._yaw])
                 self._front[0] = np.cos(pitch_rad) * np.cos(yaw_rad)
                 self._front[1] = np.sin(pitch_rad)
@@ -181,8 +187,9 @@ class Player:
                 # 设置
                 context = json.load(file)
                 self.settings: Player.Settings = Player.Settings(
-                    control = ControlSettings(**context['control']),
-                    video = VideoSettings(**context['video'])
+                    context = context,
+                    control = ControlSettings(context=context),
+                    video = VideoSettings(context=context)
                 )
             file.close()
         
@@ -194,9 +201,11 @@ class Player:
         self.scene = "gaming_type"
         self.camera: Player.Camera = Player.Camera(**kwargs)
         self.behavior: Player.Behavior = self.Behavior(kwargs["behavior"])
+        self._event: Event = Event()
         self.init()
 
     def init(self):
+        self._event.bind_player(self)
         self.attribute() # 定义属性
         
     def attribute(self):
@@ -268,3 +277,10 @@ class Player:
             *(np.array(self.camera.look_at) + np.array(self.camera.position)), # 重要，待研究
             *self.camera.up
         )
+
+    def bind_game(self, game: 'Game'):
+        self.game = game
+        self.settings.bind_game(game)
+        self._event.bind_game(game)
+        self.game.add_player(self)
+        self.game.add_cycler(self.run)

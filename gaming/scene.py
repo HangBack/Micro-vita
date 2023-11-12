@@ -1,3 +1,4 @@
+from typing import Any
 from const import *
 
 
@@ -16,6 +17,7 @@ class Scene:
         self._EBO: list = []  # 元素缓冲对象
         self._IBO: list = []  # 实例缓冲对象
         self.__models = models
+        self._position = np.zeros(3, dtype=np.float32)
         self._rotation = np.zeros(3, dtype=np.float32)
         self._scale = np.ones(3, dtype=np.float32)
         pass
@@ -44,15 +46,15 @@ class Scene:
             glBindBuffer(GL_ARRAY_BUFFER, IBO)
             glBufferData(GL_ARRAY_BUFFER, model.positions.nbytes + model.scales.nbytes + model.colors.nbytes,
                          None, GL_STATIC_DRAW) # 实例缓冲
-            glBufferSubData(GL_ARRAY_BUFFER, 
+            glBufferSubData(GL_ARRAY_BUFFER,  # 位置属性
                             0,
                             model.positions.nbytes,
                             model.positions)
-            glBufferSubData(GL_ARRAY_BUFFER,
+            glBufferSubData(GL_ARRAY_BUFFER, # 缩放属性
                             model.positions.nbytes,
                             model.scales.nbytes,
                             model.scales)
-            glBufferSubData(GL_ARRAY_BUFFER,
+            glBufferSubData(GL_ARRAY_BUFFER, # 颜色属性
                             model.positions.nbytes + model.scales.nbytes,
                             model.colors.nbytes,
                             model.colors)
@@ -114,8 +116,7 @@ class Scene:
 
             self.model_loc = glGetUniformLocation(model.shader, "model")
             glUniformMatrix4fv(self.model_loc, 1, GL_FALSE,
-                               self.spin(0.01, 0.01, 0.01) @ self.resize(-0.0001, -0.0001, -0.0001))
-            # glUniformMatrix4fv(self.model_loc, 1, GL_FALSE, self.resize(-0.001, -0.001, -0.001))
+                                self.rotate(0, 0, 0))
 
             self.projection_loc = glGetUniformLocation(
                 model.shader, "projection")
@@ -124,6 +125,7 @@ class Scene:
             glDrawElementsInstanced(
                 GL_TRIANGLES, model.count, GL_UNSIGNED_INT, None, model.instancecount)
             glUseProgram(0)
+        glBindVertexArray(0)
 
     @property
     def rotation(self):
@@ -141,6 +143,14 @@ class Scene:
     def scale(self, value):
         self._scale = np.array(value, dtype=np.float32)
 
+    @property
+    def position(self):
+        return self._position
+
+    @position.setter
+    def position(self, value):
+        self._position = np.array(value, dtype=np.float32)
+
     def spin(self, x: float | int = 0, y: float | int = 0, z: float | int = 0):
         self.rotation = self.rotation + np.array([x, y, z], dtype=np.float32)
         rot_x = pyrr.matrix44.create_from_x_rotation(self.rotation[0])
@@ -156,17 +166,30 @@ class Scene:
         return rot_z @ rot_y @ rot_x
 
     def resize(self, x: float | int = 0, y: float | int = 0, z: float | int = 0):
-        self.scale = self.scale + np.array([x, y, z], dtype=np.float32)
+        self.scale = np.array([x, y, z], dtype=np.float32)
         scale = pyrr.matrix44.create_from_scale(self.scale)
         return scale
 
     def zoom(self, x: float | int = 0, y: float | int = 0, z: float | int = 0):
-        self.scale = self.scale * np.array([x, y, z], dtype=np.float32)
+        self.scale = self.scale + np.array([x, y, z], dtype=np.float32)
         scale = pyrr.matrix44.create_from_scale(self.scale)
         return scale
 
+    def move(self, x: float | int = 0, y: float | int = 0, z: float | int = 0):
+        self.position = self.position + np.array([x, y, z], dtype=np.float32)
+        position = pyrr.matrix44.create_from_translation(self.position)
+        return position
+
+    def transfer(self, x: float | int = 0, y: float | int = 0, z: float | int = 0):
+        self.position = np.array([x, y, z], dtype=np.float32)
+        position = pyrr.matrix44.create_from_translation(self.position)
+        return position
+
     def bind_game(self, game: 'Game'):
         self.game = game
+        return self
+
+    def __call__(self, *args: Any, **kwds: Any):
         return self
 
     class multiModels(object):

@@ -1,111 +1,161 @@
 from const import *
-import modules as config
 
-
-def __import(self):
-    global gaming
-    import gaming
 
 class Game:
 
     def __init__(self) -> None:
-        game.init()
-        self.__scene: 'gaming.scene.Scene'
-        flags = DOUBLEBUF | OPENGL | FULLSCREEN
-        self.DISPLAY = (0, 0)
-        self.window = game.display.set_mode(self.DISPLAY, flags) # 游戏窗口
-        self._SCREEN_W = self.window.get_width() # 游戏窗口宽度
-        self._SCREEN_H = self.window.get_height() # 游戏窗口高度
-        self._ASPECT = self.SCREEN_W / self.SCREEN_H # 游戏窗口宽高比
-        self._center_pos = self.SCREEN_W / 2, self.SCREEN_H / 2 # 游戏窗口中心坐标
-        self._ZNEAR: float = .0005
-        self._ZFAR: float = 2000.0
+        game.init()  # 初始化pygame
 
-        
-        self._tick: int = 10
+        "类型声明"
+        self.__scene: 'gaming.scene.Scene'           # 游戏场景
+        self._user:   'gaming.entity.player.Player'  # 用户玩家
 
+        "初始化属性"
+        self._DISPLAY = (0, 0)                                    # 窗口尺寸
+        flags = DOUBLEBUF | OPENGL | FULLSCREEN                   # 窗口属性
+        self.window = game.display.set_mode(self._DISPLAY, flags)  # 游戏窗口
 
-        game.display.set_caption(const.CAPTION) # 游戏标题
+        self._SCREEN_W = self.window.get_width()   # 游戏窗口宽度
+        self._SCREEN_H = self.window.get_height()  # 游戏窗口高度
 
-        self.events: _Events = _Events([]) # 游戏事件列表
-        self.cyclers: _Cyclers = _Cyclers([]) # 循环任务列表
-        self.players: _Players = _Players([]) # 玩家列表
+        self._center_pos = self.SCREEN_W / 2, self.SCREEN_H / 2  # 游戏窗口中心坐标
+        self._ASPECT = self.SCREEN_W / self.SCREEN_H             # 游戏窗口宽高比
 
+        self._ZNEAR: float = .000_5  # 近平面
+        self._ZFAR:  float = 2_000.  # 远平面
+        self._FOVY:  float = 75.     # 视野
 
-        self._user: 'gaming.entity.player.Player' # 用户玩家
+        self._tick: int = 10  # 游戏刻
 
-    
+        game.display.set_caption(const.CAPTION)  # 游戏标题
+
+        self.cyclers = self.__Cyclers()  # 循环任务列表
+        self.players = self.__Players()  # 玩家列表
+        self.events = self.__Events()    # 事件列表
+
+    """
+    游戏属性
+    """
+
+    # ---- 窗口相关
+
     @property
-    def SCREEN_W(self):
+    def SCREEN_W(self) -> int:                    # 窗口宽度
         return self._SCREEN_W
 
+    @SCREEN_W.setter
+    def SCREEN_W(self, value):
+        self._SCREEN_W = value
+
+    # ----
+
     @property
-    def SCREEN_H(self):
+    def SCREEN_H(self) -> int:                    # 窗口高度
         return self._SCREEN_H
 
+    @SCREEN_H.setter
+    def SCREEN_H(self, value):
+        self._SCREEN_H = value
+
+    # ----
+
     @property
-    def ASPECT(self):
+    def ASPECT(self) -> float:                    # 窗口屏占比
         return self._ASPECT
 
+    @ASPECT.setter
+    def ASPECT(self, value):
+        self._ASPECT = value
+        self.projection = True
+
+    # ----
+
     @property
-    def center_pos(self):
+    def center_pos(self) -> tuple[float, float]:  # 窗口中心坐标
         return self._center_pos
 
-    @property
-    def tick(self):
-        return self._tick
-        
+    @center_pos.setter
+    def center_pos(self, value):
+        self._center_pos = value
+
+    # ---- 用户视野相关
 
     @property
-    def user(self) -> 'gaming.entity.player.Player':
+    def ZNEAR(self) -> float:  # 视野远平面
+        return self._ZNEAR
+
+    @ZNEAR.setter
+    def ZNEAR(self, value):
+        self._ZNEAR = value
+        self.projection = True
+
+    # ----
+
+    @property
+    def ZFAR(self) -> float:   # 视野近平面
+        return self._ZFAR
+
+    @ZFAR.setter
+    def ZFAR(self, value):
+        self._ZFAR = value
+        self.projection = True
+
+    # ----
+
+    @property
+    def FOVY(self) -> float:   # 视野
+        return self._FOVY
+
+    @FOVY.setter
+    def FOVY(self, value):
+        self._FOVY = value
+        self.projection = True
+
+    # ----
+
+    @property
+    def projection(self) -> pyrr.Matrix44:
+        return self._projection
+
+    @projection.setter
+    def projection(self, value):
+        if value is True:
+            self._projection = pyrr\
+                .matrix44\
+                .create_perspective_projection_matrix(
+                    self._FOVY,
+                    self._ASPECT,
+                    self._ZNEAR,
+                    self._ZFAR
+                )
+        else:
+            raise ValueError('投影不可直接修改。')
+
+    # ---- 游戏进程相关
+
+    @property
+    def tick(self) -> int:  # 游戏tick
+        return self._tick
+
+    @tick.setter
+    def tick(self, value):
+        self._tick = value
+
+    # ---- 操作用户相关
+
+    @property
+    def user(self) -> 'gaming.entity.player.Player':  # 用户
         return self._user
 
     @user.setter
-    def user(self, value):
+    def user(self, value: 'gaming.entity.player.Player'):
         if hasattr(self, '_user'):
             self.players.remove(self._user)
             del self._user
         self._user = value
-        self.add_player(self._user)
+        self._user.bind_game(self)
 
-    def init(self, scene: 'gaming.scene.Scene', **kwargs):
-        if not hasattr(self, '_user'):
-            raise ValueError('初始化游戏之前必须指定一名用户玩家')
-        
-        
-        # 投影
-        self.projection = pyrr\
-            .matrix44\
-                .create_perspective_projection_matrix(
-                    self.user.settings.video.fovy, 
-                    self._ASPECT, 
-                    self._ZNEAR, 
-                    self._ZFAR
-                )
-        self.__scene = scene(self).bind_game(self).init()
-        self._tick_iter = self._tick
-        glCullFace(GL_BACK)
-        glEnable(GL_DEPTH_TEST)  # 启用深度测试
-        game.key.set_repeat(10, 15) # 按键重复
-
-    @property
-    def tick(self) -> bool:
-        self._tick_iter -= 1
-        if self._tick_iter == 0:
-            self._tick_iter = self._tick
-            return True
-        else:
-            return False
-
-    def add_player(self, player: 'gaming.entity.player.Player') -> 'gaming.entity.player.Player':
-        self.players.append(player)  # 玩家加入游戏
-        self.cyclers.append(player.run)  # 将玩家循环添加到游戏中
-        return player
-
-    def add_event(self, event: 'gaming.event.Event') -> 'gaming.event.Event':
-        event.bind_game(self)
-        self.events.append(event)
-        return event
+    # ---- 游戏场景相关
 
     @property
     def scene(self) -> 'gaming.scene.Scene':
@@ -116,25 +166,48 @@ class Game:
         self.init(scene)
         self.__scene = scene
 
-    def __reset_canvas(self) -> None:
-        "重置画布"
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    """
+    游戏进程
+    """
 
-    def __update_display(self) -> None:
-        "更新画布"
-        game.display.flip()
-        game.time.wait(10)  # 更新频率
+    def init(self, scene: 'gaming.scene.Scene', **kwargs):
+        """
+        初始化游戏
 
+        `每个游戏实例都必须通过init方法初始化游戏`
+        """
+        logging.info("游戏初始化")
+        if not hasattr(self, '_user'):
+            raise ValueError('初始化游戏之前必须指定一名用户玩家')
 
+        # 投影
+        self.FOVY = self.user.settings.video.fovy  # 视野更改
+        self._projection = pyrr\
+            .matrix44\
+            .create_perspective_projection_matrix(
+                self._FOVY,
+                self._ASPECT,
+                self._ZNEAR,
+                self._ZFAR
+            )
+        self.__scene = scene(self).bind_game(self).init()  # 场景绑定并初始化
 
+        self._tick_iter = self._tick  # 游戏tick迭代
 
+        glCullFace(GL_BACK)          # 剔除背面
+        glEnable(GL_DEPTH_TEST)      # 启用深度测试
+        game.key.set_repeat(10, 15)  # 按键重复
 
+        self.__main_cycler = True  # 允许主游戏循环
 
-
-    """每个游戏实例都必须通过start方法开始游戏"""
     def start(self) -> NoReturn:
-        "游戏开始"
-        while True:
+        """
+        开始游戏
+
+        `每个游戏实例都必须通过start方法开始游戏`
+        """
+        logging.info("游戏开始")
+        while self.__main_cycler:
             "主循环"
             # 重置画布
             self.__reset_canvas()
@@ -152,48 +225,98 @@ class Game:
             # 更新画面
             self.__update_display()
 
+    def end(self):
+        """
+        结束游戏
+
+        `每个游戏实例都必须通过end方法结束游戏`
+        """
+        self.__main_cycler = False
+        self.save()  # 自动保存
+        game.quit()
+        logging.info("游戏结束")
+        quit()
+
+    def save(self, archive_path: os.PathLike = 'Default') -> None:
+        "保存游戏"
+        logging.info("保存游戏中...")
+
+    def add_player(
+            self,
+            player: 'gaming.entity.player.Player'
+    ) -> 'gaming.entity.player.Player':
+
+        self.players.append(player)      # 玩家加入游戏
+        return player
+
+    def add_event(
+            self,
+            event: 'gaming.event.Event'
+    ) -> 'gaming.event.Event':
+
+        self.events.append(event)
+        return event
+
+    def add_cycler(
+            self,
+            cycler: 'Callable'
+    ) -> 'Callable':
+
+        self.cyclers.append(cycler)
+        return cycler
+
+    """
+    容器
+    """
+
+    class __Container(object):  # 容器父类
+
+        def __init__(self, elements: list = []) -> None:
+            self.__elements = elements
+            pass
+
+        def __iter__(self):
+            for element in self.__elements:
+                yield element
+
+        def append(self, __object):
+            self.__elements.append(__object)
+
+        def remove(self, __value):
+            self.__elements.remove(__value)
+
+    # 玩家容器
+    class __Players(__Container):
+
+        def __init__(self, players: list['gaming.entity.player.Player'] | list = []) -> None:
+            super().__init__(players)
+
+    # 事件容器
+    class __Events(__Container):
+
+        def __init__(self, events: list['gaming.event.Event'] | list = []) -> None:
+            super().__init__(events)
+
+    # 任务容器
+    class __Cyclers(__Container):
+
+        def __init__(self, cyclers: list['Callable'] | list = []) -> None:
+            super().__init__(cyclers)
+
+    """
+    功能方法
+    """
+
+    def __reset_canvas(self) -> None:
+        "重置画布"
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+    def __update_display(self) -> None:
+        "更新画布"
+        game.display.flip()
+        game.time.wait(10)  # 更新频率
 
 
-
-
-
-class _Players(object):
-
-    def __init__(self, players: list['gaming.entity.player.Player']) -> None:
-        self.__players = players
-        pass
-
-    def __iter__(self):
-        for player in self.__players:
-            yield player
-
-    def append(self, __object: 'gaming.entity.player.Player'):
-        self.__players.append(__object)
-
-
-class _Events(object):
-
-    def __init__(self, events: list['gaming.event.Event']) -> None:
-        self.__events = events
-        pass
-
-    def __iter__(self):
-        for event in self.__events:
-            yield event
-
-    def append(self, __object: 'gaming.event.Event'):
-        self.__events.append(__object)
-
-
-class _Cyclers(object):
-
-    def __init__(self, cyclers: list['Callable']) -> None:
-        self.__cyclers = cyclers
-        pass
-
-    def __iter__(self):
-        for cycler in self.__cyclers:
-            yield cycler
-
-    def append(self, __object: 'Callable'):
-        self.__cyclers.append(__object)
+def __import():
+    global gaming
+    import gaming

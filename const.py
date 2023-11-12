@@ -16,10 +16,13 @@ from typing import Callable
 from typing import NoReturn
 from typing import Union
 
-import math
-import random
 import os
+import time
+import math
 import pyrr
+import json
+import random
+import logging
 
 
 class const:
@@ -29,7 +32,6 @@ class const:
     INFINITY = math.inf
     SHADER_PATH_PREFFIX = 'resources/assets/shaders/core'
 
-    
     @staticmethod
     def normalize(u: Sequence) -> Sequence:
         "输入向量u，返回单位向量v"
@@ -65,6 +67,7 @@ def compile_shader(path: os.PathLike):
         # ".task": ""
     }
     __exist = os.path.exists
+
     def reader(path, typer):
         with open(path, 'r') as file:
             glsl = compileShader(file.read(), typer)
@@ -79,12 +82,21 @@ def compile_shader(path: os.PathLike):
         return compileProgram(*shaders)
 
 
-
-def clamp_number(num, a, b):
+def clamp_number(
+        num: float | int,
+        a: float | int,
+        b: float | int
+) -> float | int:
+    "将数值num限制在[a, b]或[b, a]之间"
     return max(min(num, max(a, b)), min(a, b))
 
 
-def rotate_vector(u, v, deg=None, rad=None) -> Sequence:
+def rotate_vector(
+        u: Sequence,
+        v: Sequence,
+        deg: float | int = None,
+        rad: float | int = None
+) -> Sequence:
     "空间向量v绕轴向量u旋转deg度或rad弧度"
     u, v = np.array(u), np.array(v)
     if deg is not None:
@@ -103,7 +115,28 @@ def rotate_vector(u, v, deg=None, rad=None) -> Sequence:
     v = np.cos(rad) * v + np.sin(rad) * w
     return v + v_proj
 
-def is_glError():
-    error_code = glGetError()
-    if error_code != GL_NO_ERROR:
-        raise ValueError("错误")
+
+__log_file = f'../logs/{time.strftime("%Y-%m-%d", time.localtime(time.time()))}.log'
+__log_format = '[%(levelname)s][%(asctime)s.%(msecs)03d]( %(filename)s > %(funcName)s ): %(message)s'
+__log_datefmt = '%H:%M:%S'
+
+
+if os.path.exists(__log_file):
+    with open(__log_file, 'a', encoding='utf-8') as file:
+        file.write('\n\n')
+        file.close()
+    logging.basicConfig(filename=__log_file,
+                        format=__log_format,
+                        level=logging.INFO,
+                        datefmt=__log_datefmt,
+                        encoding='utf-8')
+else:
+    if not os.path.isdir('../logs/'):
+        os.makedirs('../logs/')
+    with open(__log_file, 'a', encoding='utf-8') as file:
+        file.close()
+    logging.basicConfig(filename=__log_file,
+                        format=__log_format,
+                        level=logging.INFO,
+                        datefmt=__log_datefmt,
+                        encoding='utf-8')
