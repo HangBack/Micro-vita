@@ -1,7 +1,5 @@
-
 import gaming
 from game import Game
-from const import *
 from test import test
 
 
