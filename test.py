@@ -23,8 +23,9 @@ def gradient(A, B, Step):
 
 def test() -> Scene:
     cubes: list[Cube] = []
-    mm = 100
+    mm = 1000
     ml = mm * 7
+    m = int(ml ** (1 / 2))
     grad = [
         *gradient((0, 0, 0), (0, 0, 255), mm),
         *gradient((0, 0, 255), (0, 255, 0), mm),
@@ -40,7 +41,9 @@ def test() -> Scene:
         cubes.append(cube)
     for i, cube in enumerate(cubes):
         cube.move(*np.array([
-            i * 10, i * 10, i * 10
+            i // m * 10,
+            1,
+            i % m * 10
         ]))
         # cube.rotate(*[random.randrange(0, 361) for _ in range(3)])
     return Scene(cubes)
