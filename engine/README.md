@@ -1,5 +1,7 @@
 生命引擎
 ================
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Metrics](https://img.shields.io/badge/build-develop-yellow)
 # 环境依赖
 OpenGL使用330以及之后的版本
 
@@ -7,8 +9,6 @@ OpenGL使用330以及之后的版本
 1. import engine
 
 # 介绍
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Metrics](https://img.shields.io/badge/build-develop-yellow)
 
 游戏引擎.
 

@@ -1,8 +1,8 @@
 Micro vita
 ============
-# Introduction
 ![License](https://img.shields.io/badge/license-Compiling-red.svg)
 ![Metrics](https://img.shields.io/badge/build-develop-yellow)
+# Introduction
 
 A game about chemistry and biology which says a process of protecting and resistence of homeostasis.
 
