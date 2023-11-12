@@ -69,10 +69,11 @@ class Player:
             if value is True:
                 self._view_matrix = [self._position, self._look_at, self._up]
             else:
-                raise ValueError("Not writable except bool True")
+                raise ValueError("视图矩阵不可直接更改")
         
         @property
         def front(self):
+            "摄像机前向量"
             return self._front
         
         @front.setter
@@ -84,97 +85,114 @@ class Player:
                 self._front[2] = np.cos(pitch_rad) * np.sin(yaw_rad)
             else:
                 self._front = np.array(value, dtype=np.float32)
-            self.look_at = self.position + self._front
+            self.look_at = True
 
         @property
         def yaw(self):
+            "偏航角"
             return self._yaw
 
         @yaw.setter   
         def yaw(self, value):
-            "仰俯角，达到阈值复位"
+            "偏航角，达到阈值复位"
             if self._yaw > 360.0:
                 self._yaw -= 360.0
             elif self._yaw < 0.0:
                 self._yaw += 360.0
             else:
                 self._yaw = value
-            self.front = True
+            self.front = True # 更新摄像机前方向向量
 
         @property
         def pitch(self):
+            "仰俯角"
             return self._pitch
 
         @pitch.setter   
         def pitch(self, value):
-            "y 夹在上下限"
+            "仰俯角,夹在上下限"
             self._pitch = clamp_number(value, -89.9, 89.9)
-            self.front = True
+            self.front = True # 更新摄像机前方向向量
 
         @property
         def roll(self):
+            "滚转角"
             return self._roll
 
         @roll.setter   
         def roll(self, value):
-            "z 达到阈值复位"
+            "滚转角，达到阈值复位"
             if self.roll > 360.0:
-                self.roll = 0.0
+                self.roll -= 360.0
             elif self.roll < 0.0:
-                self.roll = 360.0
+                self.roll += 360.0
             else:
                 self.roll = value
-            self.front = True
+            self.front = True # 更新摄像机前方向向量
 
         @property
         def up(self):
+            "摄像机y轴向量"
             return self._up
 
         @up.setter   
         def up(self, value):
-            self._up = np.array(value, dtype=np.float32)
+            if value is True:
+                self._up = np.cross(self._z_vector, self._x_vector)
+            else:
+                self._up = np.array(value, dtype=np.float32)
             self.view_matrix = True # 更新视图矩阵
 
         @property
         def position(self):
+            "摄像机位置"
             return self._position
 
         @position.setter   
         def position(self, value):
             self._position = np.array(value, dtype=np.float32)
-            self.look_at = self._position + self._front
-            self.z_vector = const.normalize(self._position - self.look_at)
-            self.view_matrix = True # 更新视图矩阵
+            self.look_at = True # 更新视点
 
         @property
         def look_at(self):
+            "摄像机视点"
             return self._look_at
         
         @look_at.setter
         def look_at(self, value):
-            self._look_at = np.array(value, dtype=np.float32)
-            self.z_vector = const.normalize(self.position - self._look_at)
-            self.view_matrix = True # 更新视图矩阵
+            if value is True:
+                self._look_at = self._position + self._front
+            else:
+                self._look_at = np.array(value, dtype=np.float32)
+            self.z_vector = True # 更新z轴向量
 
         @property
         def z_vector(self):
+            "摄像机z轴向量"
             return self._z_vector
 
         @z_vector.setter
         def z_vector(self, value):
-            self._z_vector = np.array(value, dtype=np.float32)
-            self.x_vector = const.normalize(np.cross(
-                np.array([0, 1, 0], dtype=np.float32), self._z_vector
-            ))
+            if value is True:
+                self._z_vector = const.normalize(self._position - self._look_at)
+            else:
+                self._z_vector = np.array(value, dtype=np.float32)
+            self.x_vector = True # 更新x轴向量
 
         @property
         def x_vector(self):
+            "摄像机x轴向量"
             return self._x_vector
         
         @x_vector.setter
         def x_vector(self, value):
-            self._x_vector = np.array(value, dtype=np.float32)
-            self.up = np.cross(self._z_vector, self._x_vector)
+            if value is True:
+                self._x_vector = const.normalize(np.cross(
+                np.array([0, 1, 0], dtype=np.float32), self._z_vector
+            ))
+            else:
+                self._x_vector = np.array(value, dtype=np.float32)
+            self.up = True
 
     def __init__(self, path=None, **kwargs) -> None:
         if path is not None:
@@ -214,7 +232,20 @@ class Player:
         self._max_speed = 1.0 # 最大速度
     
     @property
+    def speed(self):
+        "玩家当前速度"
+        return self._speed
+    
+    @speed.setter
+    def speed(self, value):
+        if value > self.max_speed:
+            self._speed = self.max_speed
+        else:
+            self._speed = value
+    
+    @property
     def start_speed(self):
+        "玩家初速度"
         return self._start_speed
     
     @start_speed.setter
@@ -223,6 +254,7 @@ class Player:
 
     @property
     def accelerate_speed(self):
+        "玩家加速度"
         return self._accelerate_speed
     
     @accelerate_speed.setter
@@ -231,6 +263,7 @@ class Player:
 
     @property
     def max_speed(self):
+        "玩家最大速度"
         return self._max_speed
     
     @max_speed.setter
