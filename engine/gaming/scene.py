@@ -1,5 +1,4 @@
-from typing import Any
-from const import *
+from ..const import *
 
 
 def __import():
@@ -189,7 +188,7 @@ class Scene:
         self.game = game
         return self
 
-    def __call__(self, *args: Any, **kwds: Any):
+    def __call__(self, *args, **kwds):
         return self
 
     class multiModels(object):

@@ -1,5 +1,5 @@
 import abc
-from const import *
+from ..const import *
 
 class Setting:
 

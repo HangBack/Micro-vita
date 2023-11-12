@@ -2,7 +2,7 @@ import pygame as game
 from pygame.locals import *
 import numpy as np
 from OpenGL.GL import *
-from const import compile_shader
+from engine.const import *
 import pyrr
 import random
 import math

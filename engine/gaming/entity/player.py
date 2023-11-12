@@ -1,4 +1,4 @@
-from const import *
+from engine.const import *
 
 from ..settings.control import Settings as ControlSettings
 from ..settings.video import Settings as VideoSettings

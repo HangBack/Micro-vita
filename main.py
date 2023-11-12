@@ -1,5 +1,5 @@
-import gaming
-from game import Game
+from engine.game import Game
+from engine import gaming
 from test import test
 
 
