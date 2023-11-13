@@ -17,6 +17,11 @@ class Settings(Setting):
         self.move_right = eval(f"{kwargs['move_right']}")
         self.move_up = eval(f"{kwargs['move_up']}")
         self.move_down = eval(f"{kwargs['move_down']}")
+        self.mapping = {
+            key: eval(value) 
+            for key, value in kwargs.items() 
+            if isinstance(value, str)
+        }
         pass
 
     def bind_game(self, game: 'Game'):
