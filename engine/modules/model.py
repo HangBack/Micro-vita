@@ -75,6 +75,9 @@ class Model(metaclass=abc.ABCMeta):
     def move(self, x: float | int, y: float | int, z: float | int):
         self.position += np.array([x, y, z], dtype=np.float32)
 
+    def transfer(self, x: float | int, y: float | int, z: float | int):
+        self.position = np.array([x, y, z], dtype=np.float32)
+
     def rotate(self, x: float | int = 0, y: float | int = 0, z: float | int = 0):
         for v in self.vertices:
             if x:

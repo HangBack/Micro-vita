@@ -17,6 +17,8 @@ class Game:
         game.init()  # 初始化pygame
 
         "类型声明"
+        self.__resource_path: str = 'null'
+        self.__enable_resource_path = False
         self.__scene: 'gaming.scene.Scene'           # 游戏场景
         self._user:   'gaming.entities.player.Player'  # 用户玩家
 
@@ -178,6 +180,19 @@ class Game:
         self.init(scene)
         self.__scene = scene
 
+    # ---- 游戏相关
+
+    @property
+    def resource_path(self) -> str:
+        return self.__resource_path
+
+    @resource_path.setter
+    def resource_path(self, resource_path: str):
+        if self.__enable_resource_path:
+            raise ValueError('资源路径是不可更改的常量')
+        self.__resource_path = resource_path
+        self.__enable_resource_path = True
+
     """
     游戏进程
     """
@@ -189,10 +204,10 @@ class Game:
         `每个游戏实例都必须通过init方法初始化游戏`
         """
         logging.info("游戏初始化")
-        if not hasattr(self, '_user'):
-            raise ValueError('初始化游戏之前必须指定一名用户玩家')
 
         # 投影
+        from engine.gaming.entities.player import Player
+        self.user = Player(f'{self.__resource_path}/player/test')
         self.FOVY = self.user.settings.video.fovy  # 视野更改
         self._projection = pyrr\
             .matrix44\
@@ -255,6 +270,8 @@ class Game:
     def save(self, archive_path: os.PathLike = 'Default') -> None:
         "保存游戏"
         logging.info("保存游戏中...")
+        logging.info("保存场景")
+        self.scene.export('./resources/scene/demo.json')
 
     def add_player(     # 加入玩家
             self,

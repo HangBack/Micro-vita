@@ -132,10 +132,17 @@ class Event(parent):
             keys = game.key.get_pressed()
             for key, value in self.player.settings.control.mapping.items():
                 if keys[value]:
-                    event = getattr(self, key)
+                    event: Event.__actionEvent = getattr(self, key)
                     event.callback()
 
 
     def bind_player(self, player: 'gaming.entities.player.Player') -> None:
         self.player = player
         return None
+    
+    class __actionEvent:
+
+        source: uuid.UUID
+
+        @classmethod
+        def callback() -> Any: ...

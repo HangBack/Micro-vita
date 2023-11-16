@@ -14,6 +14,7 @@ class cube(baseModel):
         height: int | float,
         texture: ImageObject.Image | None = None,
         colors: Sequence[int | float] = (1, 1, 1, 1),
+        position: Sequence[int | float] = (0, 0, 0),
         mode: str = 'solid'
     ) -> None:
         super().__init__()

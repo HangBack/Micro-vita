@@ -2,21 +2,23 @@ from engine.const import *
 
 
 def __import():
-    global Model, Game
+    global Model, Game, ShaderProgram
     from modules.model import Model
     from game import Game
+    from OpenGL.GL.shaders import ShaderProgram
 
 
 class Scene:
 
-    def __init__(self, models: list['Model'] | Callable) -> None:
+    def __init__(self, models: list['Model'] | Callable | os.PathLike) -> None:
         if callable(models):
             models: list['Model'] = models()
+        elif isinstance(models, str):
+            models = models
         self._VBO: list = []  # 顶点缓冲对象
         self._EBO: list = []  # 元素缓冲对象
         self._IBO: list = []  # 实例缓冲对象
         self.__models = models
-        self.__flattened_models = models.sort()
         self._position = np.zeros(3, dtype=np.float32)
         self._rotation = np.zeros(3, dtype=np.float32)
         self._scale = np.ones(3, dtype=np.float32)
@@ -153,10 +155,10 @@ class Scene:
     def position(self, value):
         self._position = np.array(value, dtype=np.float32)
 
-    def spin(self, 
-                 x: float | int = 0, 
-                 y: float | int = 0, 
-                 z: float | int = 0):
+    def spin(self,
+             x: float | int = 0,
+             y: float | int = 0,
+             z: float | int = 0):
         "旋转"
         self.rotation = self.rotation + np.array([x, y, z], dtype=np.float32)
         rot_x = pyrr.matrix44.create_from_x_rotation(self.rotation[0])
@@ -164,10 +166,10 @@ class Scene:
         rot_z = pyrr.matrix44.create_from_z_rotation(self.rotation[2])
         return rot_z @ rot_y @ rot_x
 
-    def rotate(self, 
-                 x: float | int = 0, 
-                 y: float | int = 0, 
-                 z: float | int = 0):
+    def rotate(self,
+               x: float | int = 0,
+               y: float | int = 0,
+               z: float | int = 0):
         "设置旋转"
         self.rotation = np.array([x, y, z], dtype=np.float32)
         rot_x = pyrr.matrix44.create_from_x_rotation(self.rotation[0])
@@ -175,28 +177,28 @@ class Scene:
         rot_z = pyrr.matrix44.create_from_z_rotation(self.rotation[2])
         return rot_z @ rot_y @ rot_x
 
-    def resize(self, 
-                 x: float | int = 0, 
-                 y: float | int = 0, 
-                 z: float | int = 0):
+    def resize(self,
+               x: float | int = 0,
+               y: float | int = 0,
+               z: float | int = 0):
         "设置尺寸"
         self.scale = np.array([x, y, z], dtype=np.float32)
         scale = pyrr.matrix44.create_from_scale(self.scale)
         return scale
 
-    def zoom(self, 
-                 x: float | int = 0, 
-                 y: float | int = 0, 
-                 z: float | int = 0):
+    def zoom(self,
+             x: float | int = 0,
+             y: float | int = 0,
+             z: float | int = 0):
         "缩放"
         self.scale = self.scale + np.array([x, y, z], dtype=np.float32)
         scale = pyrr.matrix44.create_from_scale(self.scale)
         return scale
 
-    def move(self, 
-                 x: float | int = 0, 
-                 y: float | int = 0, 
-                 z: float | int = 0):
+    def move(self,
+             x: float | int = 0,
+             y: float | int = 0,
+             z: float | int = 0):
         "转移"
         self.position = self.position + np.array([x, y, z], dtype=np.float32)
         position = pyrr.matrix44.create_from_translation(self.position)
@@ -215,9 +217,15 @@ class Scene:
         self.game = game
         return self
 
+    def export(self, path: os.PathLike):
+        "导出场景"
+        with open(path, 'w+', encoding='utf-8') as file:
+            file.write(self.models.__str__())
+        file.close()
+
     def __call__(self, *args, **kwds):
         return self
-    
+
     def __getitem__(self, index):
         return self.__flattened_models[index]
 
@@ -225,47 +233,66 @@ class Scene:
 
         class Models(object):
 
-            def __init__(self, models: list['Model']) -> None:
-                self.shader = compile_shader(type(models[0]).shader)
+            def __init__(self, models: list['Model'] = None, **kwargs) -> None:
+                if not ('indices' in kwargs):
+                    kwargs.__setitem__('indices', np.array(models[0].indices, dtype=np.int32))
+                if not ('count' in kwargs):
+                    kwargs.__setitem__('count', len(models[0].indices))
+                if not ('instancecount' in kwargs):
+                    kwargs.__setitem__('instancecount', len(models))
+                if not ('vertices' in kwargs):
+                    kwargs.__setitem__('vertices', np.array(
+                        models[0].vertices, dtype=np.float32))
+                if not ('colors' in kwargs):
+                    kwargs.__setitem__('colors', np.array(
+                        [model.colors for model in models], dtype=np.float32))
+                if not ('positions' in kwargs):
+                    kwargs.__setitem__('positions', np.array(
+                        [model.position for model in models], dtype=np.float32))
+                if not ('scales' in kwargs):
+                    kwargs.__setitem__('scales', np.array(
+                        [model.scale for model in models], dtype=np.float32))
+                if not ('shaderPath' in kwargs):
+                    kwargs.__setitem__('shaderPath', type(models[0]).shader)
+
+                self.shaderPath: str = kwargs['shaderPath']
+                self.shader: 'ShaderProgram' = compile_shader(self.shaderPath)
                 self.__models = models
 
-                self.indices: np.ndarray = models[0].indices
-                self.count = len(models[0].indices)
-                self.instancecount = len(models)
+                self.indices: np.ndarray = np.array(kwargs['indices'], dtype=np.int32)
+                self.count = kwargs['count']
+                self.instancecount = kwargs['instancecount']
 
-                self.vertices: np.ndarray = models[0].vertices
-                self.colors: np.ndarray = np.array(
-                    [model.colors for model in models], dtype=np.float32)
+                self.vertices: np.ndarray = np.array(kwargs['vertices'], dtype=np.float32)
+                self.colors: np.ndarray = np.array(kwargs['colors'], dtype=np.float32)
 
-                self.positions: np.ndarray = np.array(
-                    [model.position for model in models], dtype=np.float32)
-                self.scales: np.ndarray = np.array(
-                    [model.scale for model in models], dtype=np.float32)
-
-                for model in models:
-                    model.bind_scene(self)
-                pass
-
-            def __iter__(self):
-                for model in self.__models:
-                    yield model
-
-            def __len__(self):
-                return len(self.__models)
-
-            def __getitem__(self, index):
-                return self.__models[index]
-
-            def __setitem__(self, key, value):
-                self.__models[key] = value
-
-            def __delitem__(self, key):
-                del self.__models[key]
+                self.positions: np.ndarray = np.array(kwargs['positions'], dtype=np.float32)
+                self.scales: np.ndarray = np.array(kwargs['scales'], dtype=np.float32)
 
             def append(self, value: 'Model'):
                 self.__models.append(value)
 
-        def __init__(self, models: list['Model']) -> None:
+            def __str__(self) -> str:
+                keys = [key for key in dir(
+                    self) if not key.startswith(('__', '_'))]
+                data = {}
+                for key in keys:
+                    value = getattr(self, key)
+                    if isinstance(value, (list, tuple, int, float, str, bool)):
+                        data.__setitem__(key, value)
+                    elif isinstance(value, np.ndarray):
+                        value = value.tolist()
+                        data.__setitem__(key, value)
+                return json.dumps(data, sort_keys=True, indent=4, separators=(',', ':'))
+
+        def __init__(self, models: list['Model'] | os.PathLike) -> None:
+            if isinstance(models, str):
+                with open(models, 'r', encoding='utf-8') as file:
+                    datas = json.load(file)
+                    self.__models = [Scene.multiModels.Models(
+                        **data) for data in datas]
+                file.close()
+                return
             models.sort()  # 模型排序
             _model = Scene.multiModels.Models(models.copy())
             self.__models = [_model]  # 分类后的模型
@@ -296,3 +323,10 @@ class Scene:
 
         def __delitem__(self, key):
             del self.__models[key]
+
+        def __str__(self) -> str:
+            data = []
+            for model in self.__models:
+                value = json.loads(model.__str__())
+                data.append(value)
+            return json.dumps(data, sort_keys=True, indent=4, separators=(',', ':'))
