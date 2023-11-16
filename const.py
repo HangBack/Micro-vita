@@ -1,0 +1,1 @@
+RESOURCEPATH = './resources'
