@@ -13,13 +13,12 @@ class cube(baseModel):
         width: int | float,
         height: int | float,
         texture: ImageObject.Image | None = None,
-        colors: Sequence[Sequence[int | float]] |
-        Sequence[int | float] = (1, 1, 1),
+        colors: Sequence[int | float] = (1, 1, 1, 1),
         mode: str = 'solid'
     ) -> None:
         super().__init__()
         """
-        Regular hexahadron
+        立方体
         """
         # 大小矢量
         self.scale = np.array([length, width, height], dtype=np.float32)
@@ -61,7 +60,7 @@ class cube(baseModel):
 
     @property
     def modelType(self):
-        "cube优先级：0"
+        "模型权重：0"
         return 0
     
 
@@ -87,7 +86,7 @@ class sphere(baseModel):
 
         return np.array(vertices, float)
 
-    def __init__(self, center: Sequence, radius: float | int, amount: int = 50, texture=(1, 1, 1), mode: str = 'solid', **kwargs) -> None:
+    def __init__(self, center: Sequence, radius: float | int, amount: int = 50, texture=(1, 1, 1), mode: str = 'solid') -> None:
         self.center = center
         self.vertices = self.__get_vertices(
             mode, amount, amount) * float(radius) + self.center
@@ -109,14 +108,14 @@ class sphere(baseModel):
 
     @property
     def modelType(self):
-        "cube优先级：1"
+        "模型权重：1"
         return 1
     
 
 def vertice_norm(vertices: list[list[float | int]], colors):
     vertices = [list(vertice) for vertice in vertices]
     result: np.ndarray[np.float32] = np.array([
-        # [[coordinate + rgb]...] -> [[*coordinate, *rgb]...]
+        # [[coordinate + rgba]...] -> [[*coordinate, *rgba]...]
         tuple(coordinate + list(colors[i]))
         for i, coordinate in enumerate(vertices)
     ], dtype=np.float32)

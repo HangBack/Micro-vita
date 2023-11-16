@@ -121,7 +121,7 @@ class Player(parent):
         self.camera.yaw = self.camera.yaw + rotation[0]
 
     def bind_game(self, game: 'Game'):
-        super().bind_game()
+        super().bind_game(game)
         self.game.add_player(self)
         self.game.add_cycler(self.run)
         self.settings.bind_game(game)

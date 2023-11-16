@@ -182,10 +182,19 @@ class Entity(metaclass=abc.ABCMeta):
         "位置"
         return self._position
 
+    @position.setter
+    def position(self, value):
+        self._position = value
+
     @property
     def scene(self) -> 'gaming.scene.Scene':
-        "位置"
+        "所处场景"
         return self._scene
+
+    @scene.setter
+    def scene(self, value):
+        "所处场景"
+        self._scene = value
 
     def move_with_collision(self,
                             x: float | int,

@@ -105,6 +105,7 @@ class Scene:
         return self
 
     def draw(self):
+        glEnable(GL_LIGHTING)
         glBindVertexArray(self.VAO)
         for i, model in enumerate(self.models):
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self._EBO[i])
@@ -125,6 +126,7 @@ class Scene:
                 GL_TRIANGLES, model.count, GL_UNSIGNED_INT, None, model.instancecount)
             glUseProgram(0)
         glBindVertexArray(0)
+        glDisable(GL_LIGHTING)
 
     @property
     def rotation(self):
