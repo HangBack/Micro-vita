@@ -1,9 +1,9 @@
 from engine.const import *
-from engine.modules import model
+from engine.modules.model import Model as baseModel
 
 
 
-class cube(model.Model):
+class cube(baseModel):
 
     shader = const.SHADER_PATH(__name__, 'cube')
 
@@ -67,7 +67,7 @@ class cube(model.Model):
 
 
 
-class sphere(model.Model):
+class sphere(baseModel):
 
     def __get_vertices(self, mode, slices=25, stacks=25):
         slices = clamp_number(int(math.ceil(slices)), 25, const.INFINITY)
