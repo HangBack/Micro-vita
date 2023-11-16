@@ -3,33 +3,40 @@
 uniform sampler2D textureSampler;
 
 in vec2 texture_coord;
-in vec3 object_color;
-in vec3 light_color;
+in vec4 object_color;
+in vec4 light_color;
 flat in int color_status;
 
 out vec4 out_color;
 
-vec3 lightColor;
-vec4 final_texture;
+vec4 lightColor;
+vec4 objectColor;
+vec4 finalTexture;
 
 void main(){
-    final_texture = texture2D(textureSampler, texture_coord);
+    finalTexture = texture2D(textureSampler, texture_coord);
+    lightColor = light_color;
+    objectColor = object_color;
 
-    if (
-        light_color.x < 0.05 && 
-        light_color.y < 0.05 && 
-        light_color.z < 0.05
-    ) 
-        lightColor = vec3(0.05);
-    else 
-        lightColor = light_color;
+    bool drop_condition = 
+        lightColor.x < 0.00005 &&
+        lightColor.y < 0.00005 &&
+        lightColor.z < 0.00005 &&
+        abs(lightColor.w - 1.0) < 0.000001;
+
+    if (drop_condition)
+        lightColor = vec4(1.0);
+    else
+        for(int i = 0; i < 4; i++)
+            if (lightColor[i] < 0.05)
+                lightColor[i] = 0.05;
 
     switch(color_status){
         case 0:
-            out_color = vec4(vec3(1.0) * object_color, 1.0);
+            out_color = vec4(lightColor) * vec4(objectColor);
             break;
         case 1:
-            out_color = final_texture * vec4(lightColor, 1.0);
+            out_color = finalTexture * vec4(lightColor);
             break;
     }
 }
