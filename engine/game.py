@@ -234,8 +234,8 @@ class Game:
             for event in self.events:
                 event.trigger()
 
-            # 绘制场景
-            self.__scene.draw()
+            # 渲染场景
+            self.__scene.render()
 
             # 更新画面
             self.__update_display()

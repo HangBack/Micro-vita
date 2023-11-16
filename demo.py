@@ -127,7 +127,8 @@ class Game:
         glBindBuffer(GL_ARRAY_BUFFER, 0)
         glBindVertexArray(0)
 
-    def draw(self, deg):
+    def render(self, deg):
+        "渲染"
         glBindVertexArray(self.VAO)
         glUseProgram(self.shader)
         self.view_loc = glGetUniformLocation(self.shader, "view")
@@ -150,7 +151,7 @@ def main():
     while True:
         deg += 0.05
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        GAME.draw(deg)
+        GAME.render(deg)
 
         game.display.flip()
         game.time.wait(10)

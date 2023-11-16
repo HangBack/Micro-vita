@@ -97,9 +97,10 @@ class Player(parent):
     def center_pos(self, value):
         self._center_pos = value
 
-    def draw(self):
+    def render(self):
+        "渲染模型"
         for obj in self.model:
-            obj.draw()
+            obj.render()
 
     def move(self, x, y, z):
         "玩家移动方法"

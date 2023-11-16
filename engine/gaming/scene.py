@@ -104,7 +104,8 @@ class Scene:
         glBindVertexArray(0)
         return self
 
-    def draw(self):
+    def render(self):
+        "渲染场景"
         glEnable(GL_LIGHTING)
         glBindVertexArray(self.VAO)
         for i, model in enumerate(self.models):

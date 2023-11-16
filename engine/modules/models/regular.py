@@ -100,7 +100,8 @@ class sphere(baseModel):
     def load(self):
         "加载"
 
-    def draw(self):
+    def render(self):
+        "渲染模型"
         ...
 
     def update(self):
