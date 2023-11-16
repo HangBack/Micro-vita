@@ -11,7 +11,7 @@ class Event(parent):
 
     def __init__(self) -> None:
         self.uuid = uuid.uuid5(uuid.NAMESPACE_DNS, 'micro_vita') # 生成UUID
-        self.player: 'gaming.entity.player.Player'
+        self.player: 'gaming.entities.player.Player'
         self.tasks: dict[str, 'Callable'] = {}
         
     def init(self):
@@ -136,6 +136,6 @@ class Event(parent):
                     event.callback()
 
 
-    def bind_player(self, player: 'gaming.entity.player.Player') -> None:
+    def bind_player(self, player: 'gaming.entities.player.Player') -> None:
         self.player = player
         return None
