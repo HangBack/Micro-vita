@@ -54,18 +54,18 @@ class Model(metaclass=abc.ABCMeta):
         self.colors: 'np.ndarray'
 
         
-        self._texture: Material = Material(**kwargs) # 模型纹理
+        self._texture: Material = Material(**kwargs)                 # 模型纹理
 
 
         self._position: 'np.ndarray' = np.zeros(3, dtype=np.float32) # 模型位置
-        self._center: 'np.ndarray' = np.zeros(3, dtype=np.float32) # 模型中心点
-        self._scale: 'np.ndarray' = np.ones(3, dtype=np.float32) # 模型缩放率
+        self._center: 'np.ndarray' = np.zeros(3, dtype=np.float32)   # 模型中心点
+        self._scale: 'np.ndarray' = np.ones(3, dtype=np.float32)     # 模型缩放率
         
     
     def __lt__(self, other):
         if hasattr(other, 'modelType'):
             if self.modelType < self.modelType:
-                return True
+                return (self.position < other.position).all() # 判断坐标，xyz小的的优先
             else:
                 return False
 

@@ -8,7 +8,7 @@ def __import():
 
 class Game:
 
-    __Players = NewType('Players', list['gaming.entity.player.Player'])  # 玩家容器
+    __Players = NewType('Players', list['gaming.entities.player.Player'])  # 玩家容器
     __Cyclers = NewType('Cyclers', list['Callable'])                    # 循环容器
     __Events = NewType('Events',   list['gaming.event.Event'])          # 事件容器
     __Scenes = NewType('Scenes',   list['gaming.scene.Scene'])          # 场景容器
@@ -18,7 +18,7 @@ class Game:
 
         "类型声明"
         self.__scene: 'gaming.scene.Scene'           # 游戏场景
-        self._user:   'gaming.entity.player.Player'  # 用户玩家
+        self._user:   'gaming.entities.player.Player'  # 用户玩家
 
         "初始化属性"
         self._DISPLAY = (0, 0)                                    # 窗口尺寸
@@ -36,6 +36,7 @@ class Game:
         self._FOVY:  float = 75.     # 视野
 
         self._tick: int = 10  # 游戏刻
+        self.clock: game.time.Clock = game.time.Clock()
 
         game.display.set_caption(const.CAPTION)  # 游戏标题
 
@@ -146,7 +147,7 @@ class Game:
 
     @property
     def tick(self) -> int:  # 游戏tick
-        return self._tick
+        return self.clock.get_fps()
 
     @tick.setter
     def tick(self, value):
@@ -155,11 +156,11 @@ class Game:
     # ---- 操作用户相关
 
     @property
-    def user(self) -> 'gaming.entity.player.Player':  # 用户
+    def user(self) -> 'gaming.entities.player.Player':  # 用户
         return self._user
 
     @user.setter
-    def user(self, value: 'gaming.entity.player.Player'):
+    def user(self, value: 'gaming.entities.player.Player'):
         if hasattr(self, '_user'):
             self.players.remove(self._user)
             del self._user
@@ -219,15 +220,19 @@ class Game:
         logging.info("游戏开始")
         while self.__main_cycler:
             "主循环"
+            if not game.mouse.get_focused():
+                self.end()
+
             # 重置画布
             self.__reset_canvas()
 
             # 循环部分
             for cycler in self.cyclers:
-                # 事件
-                for event in self.events:
-                    event.trigger(self.tick)
                 cycler()
+            
+            # 触发器
+            for event in self.events:
+                event.trigger()
 
             # 绘制场景
             self.__scene.draw()
@@ -253,9 +258,9 @@ class Game:
 
     def add_player(     # 加入玩家
             self,
-            player: 'gaming.entity.player.Player'
-    ) -> 'gaming.entity.player.Player':
-
+            player: 'gaming.entities.player.Player'
+    ) -> 'gaming.entities.player.Player':
+        player.init()
         self.players.append(player)
         return player
 
@@ -263,7 +268,7 @@ class Game:
             self,
             event: 'gaming.event.Event'
     ) -> 'gaming.event.Event':
-
+        event.init()
         self.events.append(event)
         return event
 
@@ -296,4 +301,5 @@ class Game:
     def __update_display(self) -> None:
         "更新画布"
         game.display.flip()
-        game.time.wait(10)  # 更新频率
+        game.time.wait(10)
+        self.clock.tick(60)
