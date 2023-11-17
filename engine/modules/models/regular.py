@@ -74,7 +74,7 @@ class cube(baseModel):
             if path is None:
                 raise ValueError('使用file模式时必须指定一个文件路径')
             with open(path, 'w+') as file:
-                file.write(json.dumps(data))
+                json.dump(data)
             file.close()
         else:
             raise ValueError('path不能在mode为get时传入值')

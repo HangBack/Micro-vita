@@ -46,7 +46,7 @@ class ModelSet(object):
             return data
         elif mode == 'file':
             with open(path, 'w+', encoding='utf-8') as file:
-                json.dump(data, file, sort_keys=True, indent=4, separators=(',', ':'))
+                json.dump(data, file, sort_keys=True)
 
 
 class Scene(parent):
@@ -87,7 +87,7 @@ class Scene(parent):
             return data
         elif mode == 'file':
             with open(path, 'w+', encoding='utf-8') as file:
-                json.dump(data, file, sort_keys=True, indent=4, separators=(',', ':'))
+                json.dump(data, file, sort_keys=True)
     
     def __iter__(self):
         for modelset in self.models:

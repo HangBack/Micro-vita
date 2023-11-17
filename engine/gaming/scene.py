@@ -228,10 +228,10 @@ class Scene:
             for modelset in self.models:
                 data.append(modelset.export())
             data = {
-                'content': json.dumps(data),
+                'content': data,
                 'name': self.name
             }
-            json.dump(data, file, sort_keys=True, indent=4, separators=(',', ':'))
+            json.dump(data, file, sort_keys=True)
         file.close()
         end = time.time()
         duration = end - start
@@ -275,4 +275,4 @@ class ModelSet(object):
             elif isinstance(value, np.ndarray):
                 value = value.tolist()
                 data.__setitem__(key, value)
-        return json.dumps(data, sort_keys=True, indent=4, separators=(',', ':'))
+        return data
