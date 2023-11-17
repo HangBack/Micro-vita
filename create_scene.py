@@ -1,6 +1,6 @@
 from engine.modules.models.regular import cube as Cube
 from engine.modules.models.regular import sphere as Sphere
-from engine.gaming.scene import Scene
+from engine.modules.scenes.threeD import Scene
 import random
 import pygame as pg
 from OpenGL.GL import *
@@ -22,7 +22,7 @@ def gradient(A, B, Step):
     ]
 
 def test() -> Scene:
-    return Scene('resources/scene/demo.json')
+    # return Scene('resources/scene/demo.json')
     cubes: list[Cube] = []
     mm = 1000
     ml = mm * 7
@@ -46,5 +46,7 @@ def test() -> Scene:
             1,
             i % m * 10
         ]))
-    scene = Scene(cubes)
+    scene = Scene('demo', cubes)
     return scene
+
+test().export('resources/scene/demo2.json', 'file')

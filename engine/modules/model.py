@@ -2,24 +2,23 @@ import abc
 from engine.const import *
 
 
-
 def __import():
     global Model, Scene, ShaderProgram
     from modules.model import Model
     from gaming.scene import Scene
     from OpenGL.GL.shaders import ShaderProgram
-    
+
 
 class Material:
 
     def __init__(self, **kwargs) -> None:
-        self.diffuse = getvalue(kwargs, "diffuse") # 漫反射颜色
-        self.specular = getvalue(kwargs, "specular") # 高光反射颜色
+        self.diffuse = getvalue(kwargs, "diffuse")  # 漫反射颜色
+        self.specular = getvalue(kwargs, "specular")  # 高光反射颜色
 
     @property
     def diffuse(self):
         return self._diffuse
-    
+
     @diffuse.setter
     def diffuse(self, value):
         if value is True:
@@ -30,19 +29,19 @@ class Material:
     @property
     def specular(self):
         return self._specular
-    
+
     @specular.setter
     def specular(self, value):
         if value is True:
             self._specular = np.ones(3, dtype=np.float32)
         else:
             self._specular = np.array(value, dtype=np.float32)
-                                      
+
 
 class Model(metaclass=abc.ABCMeta):
 
     shader: os.PathLike
-        
+
     @abc.abstractmethod
     def modelType(self):
         "模型类型，决定模型的优先级"
@@ -53,21 +52,32 @@ class Model(metaclass=abc.ABCMeta):
         self.indices: 'np.ndarray'
         self.colors: 'np.ndarray'
 
-        
-        self._texture: Material = Material(**kwargs)                 # 模型纹理
+        self._texture: Material = Material(**kwargs)  # 模型纹理
 
+        if 'position' in kwargs:  # 模型位置
+            self._position: 'np.ndarray' = kwargs['position']
+        else:
+            self._position: 'np.ndarray' = np.zeros(3, dtype=np.float32)
 
-        self._position: 'np.ndarray' = np.zeros(3, dtype=np.float32) # 模型位置
-        self._center: 'np.ndarray' = np.zeros(3, dtype=np.float32)   # 模型中心点
-        self._scale: 'np.ndarray' = np.ones(3, dtype=np.float32)     # 模型缩放率
-        
-    
+        if 'center' in kwargs:   # 模型中心点
+            self._center: 'np.ndarray' = kwargs['center']
+        else:
+            self._center: 'np.ndarray' = np.zeros(3, dtype=np.float32)
+
+        if 'scale' in kwargs:    # 模型缩放率
+            self._scale: 'np.ndarray' = kwargs['scale']
+        else:
+            self._scale: 'np.ndarray' = np.ones(3, dtype=np.float32)
+
     def __lt__(self, other):
-        if hasattr(other, 'modelType'):
+        "比较，有modelType的优先"
+        if hasattr(other, 'modelType'): # modelType越高越优先
             if self.modelType < self.modelType:
-                return (self.position < other.position).all() # 判断坐标，xyz小的的优先
+                return (self.position < other.position).all()  # 判断坐标，xyz小的的优先
             else:
                 return False
+        else:
+            return False
 
     def update(self):
         self.load()
@@ -91,7 +101,7 @@ class Model(metaclass=abc.ABCMeta):
         "绑定场景实例"
         self.scene = scene
         return self
-        
+
     @property
     def model_matrix(self):
         "模型矩阵"
@@ -100,7 +110,6 @@ class Model(metaclass=abc.ABCMeta):
     @model_matrix.setter
     def model_matrix(self, value):
         self._model_matrix = np.array(value, dtype=np.float32)
-
 
     @property
     def position(self):
@@ -115,7 +124,7 @@ class Model(metaclass=abc.ABCMeta):
     def translation(self):
         "当前位移"
         return self._translation
-    
+
     @translation.setter
     def translation(self, value):
         self._translation = np.array(value, dtype=np.float32)
@@ -138,7 +147,6 @@ class Model(metaclass=abc.ABCMeta):
     @pitch.setter
     def pitch(self, value):
         self._pitch = value
-
 
 
 def getvalue(data: dict, key: str) -> bool:

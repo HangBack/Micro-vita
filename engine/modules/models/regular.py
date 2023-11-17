@@ -12,12 +12,12 @@ class cube(baseModel):
         length: int | float,
         width: int | float,
         height: int | float,
-        texture: ImageObject.Image | None = None,
+        texture: str | None = None,
         colors: Sequence[int | float] = (1, 1, 1, 1),
         position: Sequence[int | float] = (0, 0, 0),
         mode: str = 'solid'
     ) -> None:
-        super().__init__()
+        super().__init__(position=position)
         """
         立方体
         """
@@ -58,6 +58,26 @@ class cube(baseModel):
         self.colors = colors
         self.texture = texture
         self.mode = mode
+
+    def export(self, path: str | os.PathLike = None, mode: str = 'get') -> str | None:
+        data = {}
+        keys = get_attributes(self)
+        for key in keys:
+            value = getattr(self, key)
+            if isinstance(value, np.ndarray):
+                value = value.tolist()
+            data.__setitem__(key, value)
+        # 模式判断
+        if path is None and mode == 'get': # 模式为get时返回字典数据
+            return data
+        elif mode == 'file':
+            if path is None:
+                raise ValueError('使用file模式时必须指定一个文件路径')
+            with open(path, 'w+') as file:
+                file.write(json.dumps(data))
+            file.close()
+        else:
+            raise ValueError('path不能在mode为get时传入值')
 
     @property
     def modelType(self):
