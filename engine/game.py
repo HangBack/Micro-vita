@@ -204,10 +204,13 @@ class Game:
         `每个游戏实例都必须通过init方法初始化游戏`
         """
         logging.info("游戏初始化")
-
+        if 'resource_path' in kwargs:
+            self.resource_path = kwargs['resource_path']
         # 投影
         from engine.gaming.entities.player import Player
+        from engine.gaming.scene import Scene
         self.user = Player(f'{self.__resource_path}/player/test')
+        self.add_scene(Scene(f'{self.__resource_path}/scene/demo'))
         self.FOVY = self.user.settings.video.fovy  # 视野更改
         self._projection = pyrr\
             .matrix44\
@@ -271,7 +274,8 @@ class Game:
         "保存游戏"
         logging.info("保存游戏中...")
         logging.info("保存场景")
-        self.scene.export('./resources/scene/demo.json')
+        for scene in self.scenes:
+            scene.export()
 
     def add_player(     # 加入玩家
             self,

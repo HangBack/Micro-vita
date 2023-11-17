@@ -5,6 +5,7 @@ from OpenGL.GLUT import *
 from pygame.locals import *
 
 from OpenGL.GL.shaders import compileShader
+from OpenGL.GL.shaders import ShaderProgram
 from OpenGL.GL.shaders import compileProgram
 
 from PIL import Image as ImageObject
@@ -124,6 +125,17 @@ def rotate_vector(
 __log_file = f'../logs/{time.strftime("%Y-%m-%d", time.localtime(time.time()))}.log'
 __log_format = '[%(levelname)s][%(asctime)s.%(msecs)03d]( %(filename)s > %(funcName)s ): %(message)s'
 __log_datefmt = '%H:%M:%S'
+
+
+def get_attributes(obj):
+    "获取元素属性"
+    return [
+        key
+        for key in dir(obj)
+        if 
+            not key.startswith(('__', '_')) and
+            not isinstance(getattr(obj, key), Callable)
+    ]
 
 
 if os.path.exists(__log_file):

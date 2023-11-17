@@ -6,8 +6,9 @@ from const import *
 
 def main():
     GAME = Game() # 创建游戏实例
-    GAME.resource_path = RESOURCEPATH
-    GAME.init()  # 初始化游戏
+    GAME.init( # 初始化游戏
+        resource_path = RESOURCEPATH # 资源路径
+    )
     GAME.start() # 开始游戏
 
 

@@ -10,22 +10,23 @@ def __import():
 
 class Scene:
 
-    def __init__(self, models: list['Model'] | Callable | os.PathLike) -> None:
-        if callable(models):
-            models: list['Model'] = models()
-        elif isinstance(models, str):
-            models = models
+    def __init__(self, path: os.PathLike) -> None:
         self._VBO: list = []  # 顶点缓冲对象
         self._EBO: list = []  # 元素缓冲对象
         self._IBO: list = []  # 实例缓冲对象
-        self.__models = models
+        self.scene_path = path + '.json'
         self._position = np.zeros(3, dtype=np.float32)
         self._rotation = np.zeros(3, dtype=np.float32)
         self._scale = np.ones(3, dtype=np.float32)
-        pass
 
     def init(self):
-        self.models = Scene.multiModels(self.__models)
+        with open(self.scene_path, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+            self.name = data['name']
+            self.models: list[ModelSet] = []
+            for modelset in data['content']:
+                self.models.append(ModelSet(**modelset))
+        file.close()
         for _ in self.models:
             self._VBO.append(glGenBuffers(1))
             self._EBO.append(glGenBuffers(1))
@@ -217,11 +218,24 @@ class Scene:
         self.game = game
         return self
 
-    def export(self, path: os.PathLike):
+    def export(self, path: os.PathLike = None):
         "导出场景"
+        start = time.time()
+        if path is None:
+            path = self.scene_path
         with open(path, 'w+', encoding='utf-8') as file:
-            file.write(self.models.__str__())
+            data = []
+            for modelset in self.models:
+                data.append(modelset.export())
+            data = {
+                'content': json.dumps(data),
+                'name': self.name
+            }
+            json.dump(data, file, sort_keys=True, indent=4, separators=(',', ':'))
         file.close()
+        end = time.time()
+        duration = end - start
+        logging.info(f"保存“{self.name}”耗时：{duration}s")
 
     def __call__(self, *args, **kwds):
         return self
@@ -229,104 +243,36 @@ class Scene:
     def __getitem__(self, index):
         return self.__flattened_models[index]
 
-    class multiModels(object):
+class ModelSet(object):
 
-        class Models(object):
+    def __init__(self,**kwargs) -> None:
 
-            def __init__(self, models: list['Model'] = None, **kwargs) -> None:
-                if not ('indices' in kwargs):
-                    kwargs.__setitem__('indices', np.array(models[0].indices, dtype=np.int32))
-                if not ('count' in kwargs):
-                    kwargs.__setitem__('count', len(models[0].indices))
-                if not ('instancecount' in kwargs):
-                    kwargs.__setitem__('instancecount', len(models))
-                if not ('vertices' in kwargs):
-                    kwargs.__setitem__('vertices', np.array(
-                        models[0].vertices, dtype=np.float32))
-                if not ('colors' in kwargs):
-                    kwargs.__setitem__('colors', np.array(
-                        [model.colors for model in models], dtype=np.float32))
-                if not ('positions' in kwargs):
-                    kwargs.__setitem__('positions', np.array(
-                        [model.position for model in models], dtype=np.float32))
-                if not ('scales' in kwargs):
-                    kwargs.__setitem__('scales', np.array(
-                        [model.scale for model in models], dtype=np.float32))
-                if not ('shaderPath' in kwargs):
-                    kwargs.__setitem__('shaderPath', type(models[0]).shader)
+        self.shaderPath: str = kwargs['shaderPath']
+        self.shader: 'ShaderProgram' = compile_shader(self.shaderPath)
 
-                self.shaderPath: str = kwargs['shaderPath']
-                self.shader: 'ShaderProgram' = compile_shader(self.shaderPath)
-                self.__models = models
+        self.indices: np.ndarray = np.array(
+            kwargs['indices'], dtype=np.int32)
+        self.count = kwargs['count']
+        self.instancecount = kwargs['instancecount']
 
-                self.indices: np.ndarray = np.array(kwargs['indices'], dtype=np.int32)
-                self.count = kwargs['count']
-                self.instancecount = kwargs['instancecount']
+        self.vertices: np.ndarray = np.array(
+            kwargs['vertices'], dtype=np.float32)
+        self.colors: np.ndarray = np.array(
+            kwargs['colors'], dtype=np.float32)
 
-                self.vertices: np.ndarray = np.array(kwargs['vertices'], dtype=np.float32)
-                self.colors: np.ndarray = np.array(kwargs['colors'], dtype=np.float32)
+        self.positions: np.ndarray = np.array(
+            kwargs['positions'], dtype=np.float32)
+        self.scales: np.ndarray = np.array(
+            kwargs['scales'], dtype=np.float32)
 
-                self.positions: np.ndarray = np.array(kwargs['positions'], dtype=np.float32)
-                self.scales: np.ndarray = np.array(kwargs['scales'], dtype=np.float32)
-
-            def append(self, value: 'Model'):
-                self.__models.append(value)
-
-            def __str__(self) -> str:
-                keys = [key for key in dir(
-                    self) if not key.startswith(('__', '_'))]
-                data = {}
-                for key in keys:
-                    value = getattr(self, key)
-                    if isinstance(value, (list, tuple, int, float, str, bool)):
-                        data.__setitem__(key, value)
-                    elif isinstance(value, np.ndarray):
-                        value = value.tolist()
-                        data.__setitem__(key, value)
-                return json.dumps(data, sort_keys=True, indent=4, separators=(',', ':'))
-
-        def __init__(self, models: list['Model'] | os.PathLike) -> None:
-            if isinstance(models, str):
-                with open(models, 'r', encoding='utf-8') as file:
-                    datas = json.load(file)
-                    self.__models = [Scene.multiModels.Models(
-                        **data) for data in datas]
-                file.close()
-                return
-            models.sort()  # 模型排序
-            _model = Scene.multiModels.Models(models.copy())
-            self.__models = [_model]  # 分类后的模型
-            self.__models.pop()
-            # 模型分类
-            for i, model in enumerate(models[1:]):
-                if isinstance(model, type(models[i])):  # 类型相同
-                    _model.append(model)
-                    if model is models[-1]:
-                        self.__models.append(_model)
-                else:
-                    self.__models.append(_model)
-                    _model = Scene.multiModels.Models([])
-            del _model
-
-        def __iter__(self):
-            for models in self.__models:
-                yield models
-
-        def __len__(self):
-            return len(self.__models)
-
-        def __getitem__(self, index):
-            return self.__models[index]
-
-        def __setitem__(self, key, value):
-            self.__models[key] = value
-
-        def __delitem__(self, key):
-            del self.__models[key]
-
-        def __str__(self) -> str:
-            data = []
-            for model in self.__models:
-                value = json.loads(model.__str__())
-                data.append(value)
-            return json.dumps(data, sort_keys=True, indent=4, separators=(',', ':'))
+    def export(self) -> str:
+        keys = get_attributes(self)
+        data = {}
+        for key in keys:
+            value = getattr(self, key)
+            if isinstance(value, (list, tuple, int, float, str, bool)):
+                data.__setitem__(key, value)
+            elif isinstance(value, np.ndarray):
+                value = value.tolist()
+                data.__setitem__(key, value)
+        return json.dumps(data, sort_keys=True, indent=4, separators=(',', ':'))
