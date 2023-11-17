@@ -210,7 +210,10 @@ class Game:
         from engine.gaming.entities.player import Player
         from engine.gaming.scene import Scene
         self.user = Player(f'{self.__resource_path}/player/test')
-        self.add_scene(Scene(f'{self.__resource_path}/scene/demo'))
+        for path in os.listdir(f'{self.__resource_path}/scene/'):
+            path = path.split('.')[0]
+            scene = Scene(f'{self.__resource_path}/scene/{path}')
+            self.add_scene(scene)
         self.FOVY = self.user.settings.video.fovy  # 视野更改
         self._projection = pyrr\
             .matrix44\
@@ -220,7 +223,7 @@ class Game:
                 self._ZNEAR,
                 self._ZFAR
             )
-        self.__scene = self.scenes[0]  # 场景绑定并初始化
+        self.__scene = [scene for scene in self.scenes if scene.name == 'main'][0]  # 场景绑定并初始化
         self._tick_iter = self._tick  # 游戏tick迭代
 
         glCullFace(GL_BACK)          # 剔除背面
