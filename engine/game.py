@@ -8,7 +8,7 @@ def __import():
 
 class Game:
 
-    __Players = NewType('Players', list['gaming.entities.player.Player'])  # 玩家容器
+    __Players = NewType('Players', list['gaming.entities.Player'])      # 玩家容器
     __Cyclers = NewType('Cyclers', list['Callable'])                    # 循环容器
     __Events = NewType('Events',   list['gaming.event.Event'])          # 事件容器
     __Scenes = NewType('Scenes',   list['gaming.scene.Scene'])          # 场景容器
@@ -20,7 +20,7 @@ class Game:
         self.__resource_path: str = 'null'
         self.__enable_resource_path = False
         self.__scene: 'gaming.scene.Scene'           # 游戏场景
-        self._user:   'gaming.entities.player.Player'  # 用户玩家
+        self._user:   'gaming.entities.Player'  # 用户玩家
 
         "初始化属性"
         self._DISPLAY = (0, 0)                                    # 窗口尺寸
@@ -158,11 +158,11 @@ class Game:
     # ---- 操作用户相关
 
     @property
-    def user(self) -> 'gaming.entities.player.Player':  # 用户
+    def user(self) -> 'gaming.entities.Player':  # 用户
         return self._user
 
     @user.setter
-    def user(self, value: 'gaming.entities.player.Player'):
+    def user(self, value: 'gaming.entities.Player'):
         if hasattr(self, '_user'):
             self.players.remove(self._user)
             del self._user
@@ -223,7 +223,8 @@ class Game:
                 self._ZNEAR,
                 self._ZFAR
             )
-        self.__scene = [scene for scene in self.scenes if scene.name == 'main'][0]  # 场景绑定并初始化
+        self.__scene = [
+            scene for scene in self.scenes if scene.name == 'main'][0]  # 场景绑定并初始化
         self._tick_iter = self._tick  # 游戏tick迭代
 
         glCullFace(GL_BACK)          # 剔除背面
@@ -250,7 +251,7 @@ class Game:
             # 循环部分
             for cycler in self.cyclers:
                 cycler()
-            
+
             # 触发器
             for event in self.events:
                 event.trigger()
@@ -282,8 +283,8 @@ class Game:
 
     def add_player(     # 加入玩家
             self,
-            player: 'gaming.entities.player.Player'
-    ) -> 'gaming.entities.player.Player':
+            player: 'gaming.entities.Player'
+    ) -> 'gaming.entities.Player':
         player.init()
         self.players.append(player)
         return player
