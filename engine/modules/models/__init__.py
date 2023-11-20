@@ -1,5 +1,5 @@
-from . import regular
+from .cube import Cube
 
 __all__ = [
-    'regular'
+    'Cube'
 ]
