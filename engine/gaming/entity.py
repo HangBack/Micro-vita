@@ -200,24 +200,23 @@ class Entity(metaclass=abc.ABCMeta):
                             x: float | int,
                             y: float | int,
                             z: float | int):
-        scene_position = self.scene.position.copy()  # 复制当前生物所处场景的坐标
-        entity_position = self.position.copy()       # 复制当前生物的坐标
-        dimension = self.in_which(entity_position, scene_position)
-        in_body = self.game.scene[dimension]         # 所处最小包围盒
+        if not hasattr(self.game.scene, 'current_node'):
+            self.game.scene.current_node = self.game.scene.octree
+        dimension = self.game.scene.current_node
 
         while True:
-            dimension = self.in_which(entity_position, scene_position)
-            if isinstance(in_body, Iterable):
-                in_body = in_body[dimension]         # 更新所处最小包围盒
+            if isinstance(dimension.children, Iterable):
+                dimension = dimension.children[self.in_which]         # 更新所处最小包围盒
             elif ...: # 未发生碰撞则移动
                 x = clamp_number(x, ..., ...)
                 y = clamp_number(y, ..., ...)
                 z = clamp_number(z, ..., ...)
                 self.move(x, y, z)
+                break
             else:
-                ...
-
-    def in_which(self, entity_position, scene_position):
+                dimension = dimension.parent
+    @property
+    def in_which(self) -> int:
         self.game.scene
 
     def bind_game(self, game: 'Game'):
