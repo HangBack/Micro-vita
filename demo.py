@@ -142,14 +142,14 @@ class Game:
 
 
 def main():
-    GAME = Game('resources/assets/shaders/core/regular/cube', 'Demo')
+    GAME = Game('resources/assets/shaders/core/cube/cube', 'Demo')
     GAME.load_cube()
     glClearColor(0.1, 0.5, 1.0, 1.0)
     glCullFace(GL_BACK)
     glEnable(GL_DEPTH_TEST)
     deg = 0
     while True:
-        deg += 0.05
+        deg += 0.005
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         GAME.render(deg)
 
