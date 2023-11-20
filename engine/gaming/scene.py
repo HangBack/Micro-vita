@@ -2,8 +2,9 @@ from engine.const import *
 
 
 def __import():
-    global Model, Game, ShaderProgram
+    global Model, Game, ShaderProgram, Octree
     from modules.model import Model
+    from tools.orgnizations.trees import Octree
     from game import Game
     from OpenGL.GL.shaders import ShaderProgram
 
@@ -18,6 +19,9 @@ class Scene:
         self._position = np.zeros(3, dtype=np.float32)
         self._rotation = np.zeros(3, dtype=np.float32)
         self._scale = np.ones(3, dtype=np.float32)
+
+        # 仅声明
+        self._octree: Octree
 
     def init(self):
         with open(self.scene_path, 'r', encoding='utf-8') as file:
@@ -155,6 +159,10 @@ class Scene:
     @position.setter
     def position(self, value):
         self._position = np.array(value, dtype=np.float32)
+
+    @property
+    def octree(self):
+        return self._octree
 
     def spin(self,
              x: float | int = 0,

@@ -3,8 +3,7 @@ from engine.const import *
 
 
 def __import():
-    global Model, Scene, ShaderProgram
-    from modules.model import Model
+    global Scene, ShaderProgram
     from gaming.scene import Scene
     from OpenGL.GL.shaders import ShaderProgram
 

@@ -1,5 +1,5 @@
-from . import player
+from .player import Player
 
 __all__ = [
-    'player'
+    'Player'
 ]

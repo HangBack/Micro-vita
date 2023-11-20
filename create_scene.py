@@ -1,15 +1,10 @@
-from engine.modules.models.regular import cube as Cube
-from engine.modules.models.regular import sphere as Sphere
+from engine.modules.models import Cube
 from engine.modules.scenes.threeD import Scene
 import random
-import pygame as pg
 from OpenGL.GL import *
 import numpy as np
 import math
 
-def __import():
-    global Game
-    from engine.game import Game
 
 def gradient(A, B, Step):
     return [

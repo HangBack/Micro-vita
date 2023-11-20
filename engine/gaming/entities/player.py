@@ -3,9 +3,9 @@ from engine.const import *
 from engine.gaming.settings.control import Settings as ControlSettings
 from engine.gaming.settings.video import Settings as VideoSettings
 
-from engine.gaming.entity import Entity as parent
+from engine.gaming.entity import Entity
+from engine.gaming.entity import Camera
 from engine.gaming.events.player import Event
-from engine.gaming.entity import Camera as playerCamera
 
 import uuid
 
@@ -13,7 +13,7 @@ def __import():
     global Game
     from game import Game
 
-class Player(parent):
+class Player(Entity):
 
     def __init__(self, path=None, **kwargs) -> None:
         if path is not None:
@@ -38,7 +38,7 @@ class Player(parent):
         self.collision: Iterable = kwargs["collision"]
         self.model = kwargs["model"]
         self.scene = "gaming_type"
-        self.camera: playerCamera = playerCamera(**kwargs)
+        self.camera: Camera = Camera(**kwargs)
         self.behavior: Player.Behavior = Player.Behavior(kwargs["behavior"])
         self.event: Event = Event()
         self.uuid = uuid.uuid5(uuid.NAMESPACE_DNS, 'micro_vita')

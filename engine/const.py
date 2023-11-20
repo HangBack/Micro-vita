@@ -19,6 +19,8 @@ from typing import NewType
 from typing import Union
 from typing import Any
 
+from collections import deque
+
 import os
 import abc
 import time

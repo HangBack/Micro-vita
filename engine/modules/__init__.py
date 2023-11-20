@@ -1,13 +1,18 @@
 from . import display
 from . import models
-from . import model
+
+from .model import Model
+
 from . import scenes
 from . import scene
+
+from . import box
 
 __all__ = [
     "scenes",
     "scene",
     "models",
-    "model",
-    "display"
+    "Model",
+    "display",
+    'box'
 ]
